@@ -104,6 +104,8 @@ export interface PatchStepsRegistry {
     PASTE: PatchStep.PASTE;
     COMMENT: PatchStep.COMMENT;
     DEBUG: PatchStep.DEBUG;
+    MERGE_CONTENT: PatchStep.MERGE_CONTENT;
+    CALL: PatchStep.CALL;
 }
 
 export type AnyPatchStep = Extract<PatchStepsRegistry[keyof PatchStepsRegistry], BasePatchStep>;

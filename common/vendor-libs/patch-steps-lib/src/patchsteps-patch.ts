@@ -22,7 +22,7 @@ import {
     Index,
     Loader,
     ParsedPath,
-    PatchFile,
+    PatchFile, PatchStep,
     StackEntryStep, unsafeAssert
 } from './types.js'
 
@@ -401,7 +401,7 @@ appliers["PASTE"] = async function(state) {
 			content: value,
 			...(!isNaN(this["index"]) ? {index: this["index"]} : {})
 		};
-		await applyStep(obj, state);
+		await applyStep(obj as PatchStep.ADD_ARRAY_ELEMENT, state);
 	} else if (typeof state.currentValue === "object") {
 		await applyStep({
 			type: "SET_KEY",
@@ -457,6 +457,8 @@ appliers["SET_KEY"] = async function (state) {
 		state.debugState.throwError('Error', 'index must be set.');
 	}
 
+	unsafeAssert<Record<number | string, unknown>>(state.currentValue);
+
 	if ("content" in this) {
 		state.currentValue[this["index"]] = photocopy(this["content"]);
 	} else {
@@ -465,10 +467,13 @@ appliers["SET_KEY"] = async function (state) {
 };
 
 appliers["REMOVE_ARRAY_ELEMENT"] = async function (state) {
+	unsafeAssert<unknown[]>(state.currentValue);
 	state.currentValue.splice(this["index"], 1);
 };
 
 appliers["ADD_ARRAY_ELEMENT"] = async function (state) {
+	unsafeAssert<unknown[]>(state.currentValue);
+
 	if ("index" in this) {
 		state.currentValue.splice(this["index"], 0, photocopy(this["content"]));
 	} else {
@@ -477,7 +482,7 @@ appliers["ADD_ARRAY_ELEMENT"] = async function (state) {
 };
 
 // Reintroduced but simplified version of Emileyah's resolveUrl
-function parsePath(url: string, fromGame) {
+function parsePath(url: string, fromGame: boolean) {
 	try {
 		const decomposedUrl = new URL(url);
 		const protocol = decomposedUrl.protocol;
