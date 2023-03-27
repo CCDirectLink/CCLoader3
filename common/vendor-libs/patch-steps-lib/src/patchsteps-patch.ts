@@ -518,10 +518,11 @@ appliers["IMPORT"] = async function (state) {
 	let obj = await state.loader.apply(state, srcPath);
 
 	if ("path" in this) {
-		if (!Array.isArray(this["path"])) {
+		const path = this["path"];
+		if (!Array.isArray(path)) {
 			state.debugState.throwError('ValueError', 'path must be an array.');
 		}
-		for (let i = 0; i < this["path"].length; i++)
+		for (let i = 0; i < path.length; i++)
 			obj = obj[this["path"][i]];
 	}
 
@@ -550,7 +551,9 @@ appliers["INIT_KEY"] = async function (state) {
 		state.debugState.throwError('ValueError', 'index must be set.');
 	}
 
-	if (!(this["index"] in state.currentValue))
+	unsafeAssert<Record<string | number, unknown>>(state.currentValue);
+
+	if (!(this["index"] in (state.currentValue)))
 		state.currentValue[this["index"]] = photocopy(this["content"]);
 };
 

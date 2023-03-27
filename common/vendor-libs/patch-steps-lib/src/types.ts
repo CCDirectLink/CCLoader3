@@ -1,3 +1,5 @@
+import {DebugState} from "./patchsteps-patch.js";
+
 export type Index = string | number;
 
 export interface BasePatchStep {
