@@ -126,7 +126,7 @@ export interface FileInfo {
     stack: StackEntry[];
 }
 
-type Loader = (fromGame: boolean | string, path: string) => Promise<unknown>;
+export type Loader = (fromGame: boolean | string, path: string) => Promise<unknown>;
 
 export interface ApplierState {
     currentValue: unknown;
@@ -159,6 +159,4 @@ export interface DiffSettings {
     optimize: boolean;
 }
 
-export function unsafeAssert<T>(val: any): asserts val is T {
-    return true;
-}
+export function unsafeAssert<T>(val: any): asserts val is T {}

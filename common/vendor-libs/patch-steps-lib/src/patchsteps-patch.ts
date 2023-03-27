@@ -20,9 +20,10 @@ import {
     ApplierState,
     FileInfo,
     Index,
+    Loader,
     ParsedPath,
     PatchFile,
-    StackEntryStep
+    StackEntryStep, unsafeAssert
 } from './types.js'
 
 // The following are definitions used for reference in DebugState.
@@ -220,7 +221,7 @@ export class DebugState {
 // Custom extensions are registered here.
 // Their 'this' is the Step, they are passed the state, and they are expected to return a Promise.
 // In practice this is done with async old-style functions.
-export const appliers: Appliers = {};
+export const appliers: Appliers = {} as any; // TODO(lleyton): no.
 
 /*
  * @param {any} a The object to modify
@@ -242,6 +243,9 @@ export async function patch(a: unknown, steps: PatchFile, loader: Loader, debugS
 		debugState.addFile(null);
 	}
 	if (steps.constructor === Object) {
+		unsafeAssert<Record<string, Object & Record<string, unknown>>>(steps);
+		unsafeAssert<Record<string, unknown>>(a);
+
 		// Standardized Mods specification
 		for (let k in steps) {
 			// Switched back to a literal translation in 1.0.2 to make it make sense with spec, it's more awkward but simpler.
@@ -257,6 +261,7 @@ export async function patch(a: unknown, steps: PatchFile, loader: Loader, debugS
 		}
 		return;
 	}
+	unsafeAssert<AnyPatchStep[]>(steps);
 	const state = {
 		currentValue: a,
 		stack: [],
@@ -268,7 +273,7 @@ export async function patch(a: unknown, steps: PatchFile, loader: Loader, debugS
 	for (let index = 0; index < steps.length; index++) {
 		try {
 			debugState.addStep(index);
-			await applyStep(steps[index], state, debugState);
+			await applyStep(steps[index], state);
 			debugState.removeLastStep();
 		} catch(e) {
 			debugState.print();
@@ -291,7 +296,7 @@ async function applyStep(step: AnyPatchStep, state: ApplierState) {
 	await state.debugState.afterStep();
 }
 
-function replaceObjectProperty(object: Record<string, any>, key: string, keyword: string, value) {
+function replaceObjectProperty<O>(object: O, key: keyof O, keyword: string | Record<string, string>, value: string) {
 	let oldValue = object[key];
 	// It's more complex than we thought.
 	if (!Array.isArray(keyword) && typeof keyword === "object") {
@@ -313,7 +318,7 @@ function replaceObjectProperty(object: Record<string, any>, key: string, keyword
  * @param {String| {[replacementId]: string | number}} value The value the replace the match
  * @returns {void}
  * */
-function valueInsertion(obj, keyword, value) {
+function valueInsertion(obj: Record<string, unknown>, keyword: RegExp | {[replacementId: string]: RegExp}, value: string | {[replacementId: string]: string | number}) {
 	if (Array.isArray(obj)) {
 		for (let index = 0; index < obj.length; index++) {
 			const child = obj[index];
@@ -393,12 +398,9 @@ appliers["PASTE"] = async function(state) {
 	if (Array.isArray(state.currentValue)) {
 		const obj = {
 			type: "ADD_ARRAY_ELEMENT",
-			content: value
+			content: value,
+			...(!isNaN(this["index"]) ? {index: this["index"]} : {})
 		};
-
-		if (!isNaN(this["index"])) {
-			obj.index = this["index"];
-		}
 		await applyStep(obj, state);
 	} else if (typeof state.currentValue === "object") {
 		await applyStep({
@@ -424,7 +426,7 @@ appliers["ENTER"] = async function (state) {
 	}
 
 	let path = [this["index"]];
-	if (this["index"].constructor == Array)
+	if (Array.isArray(this["index"]))
 		path = this["index"];
 	for (let i = 0; i < path.length;i++) {
 		const idx = path[i];
