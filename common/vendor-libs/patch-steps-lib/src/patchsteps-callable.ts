@@ -7,17 +7,25 @@ import {appliers, DebugState} from "./patchsteps-patch.js";
  * @property {(fromGame: boolean| string, path: string) => Promise<any>}
  * @property {DebugState} debugState
  * @property {boolean} debug
- * /
+ */
+export interface State {
+	currentValue: unknown,
+	stack: unknown[],
+	debugState: DebugState,
+	debug: boolean
+}
 
 /**
  * A user defined step that is distinguishable from builtin PatchSteps.
  * Errors that occur in callables are not handled by the PatchSteps interpreter.
  *
- * @async 
+ * @async
  * @callback Callable
  * @param {State} state is the internal PatchStep state.
  * @param {unknown} args is the user supplied arguments.
  */
+export type Callable = (state: State, args: unknown) => Promise<void>;
+
 
 /* @type {Map<string,Callable>} */
 const callables = new Map;
@@ -26,7 +34,7 @@ const callables = new Map;
  * @param {string} id
  * @param {Callable} callable
  */
-export function register(id, callable) {
+export function register(id: string, callable: Callable) {
 	if (typeof id !== "string") {
 		throw Error('Id must be a string');
 	}
@@ -44,7 +52,7 @@ export function register(id, callable) {
 	callables.set(id, callable);
 }
 
-appliers["CALL"] = async function(state) {
+appliers["CALL"] = async function(state: State) {
 	const id = this["id"];
 	const args = this["args"];
 
@@ -66,7 +74,7 @@ appliers["CALL"] = async function(state) {
 		if (e !== state.debugState) {
 			// So they know what happened
 			console.error(e);
-			state.debugState.throwError('ValueError', `Callable ${i} did not properly throw an error.`);
+			state.debugState.throwError('ValueError', `Callable ${id} did not properly throw an error.`);
 		}
 		// They properly threw the error
 		throw e;

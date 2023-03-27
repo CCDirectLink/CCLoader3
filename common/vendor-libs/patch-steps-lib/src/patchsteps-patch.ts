@@ -36,10 +36,27 @@ import {photocopy, photomerge} from "./patchsteps-utils.js";
  *  errorMessage: string;
  * };
  */
+export type ParsedPath = null | [fromGame: true | false | string, url: string];
+export interface StackEntryError {
+	type: "Error";
+	errorType: string;
+	errorMessage: string;
+}
+export interface StackEntryStep {
+	type: "Step"
+}
+export type StackEntry = StackEntryStep | StackEntryError;
+export interface FileInfo {
+	path: string;
+	stack: StackEntry[];
+}
 
 // Error handling for appliers.
 // You are expected to subclass this class if you want additional functionality.
 export class DebugState {
+		fileStack: FileInfo[];
+		currentFile: FileInfo | null;
+
 	// The constructor. The default state of a DebugState is invalid; a file must be added (even if null) to make it valid.
 	constructor() {
 		// FileInfo[]
@@ -52,7 +69,7 @@ export class DebugState {
 	 * Translates a ParsedPath into a string.
 	 * Overridable.
 	 */
-	translateParsedPath(parsedPath) {
+	translateParsedPath(parsedPath: ParsedPath) {
 		if (parsedPath === null)
 			return "(unknown file)";
 		// By default, we know nothing.
@@ -70,7 +87,7 @@ export class DebugState {
 	 * Enters a file by parsedPath. Do not override.
 	 * @final
 	 */
-	addFile(parsedPath) {
+	addFile(parsedPath: ParsedPath) {
 		const path = this.translateParsedPath(parsedPath);
 		const fileInfo = {
 			path,
@@ -84,12 +101,12 @@ export class DebugState {
 	 * Removes a pushed file.
 	 * @final
 	 */
-	removeLastFile() {
+	removeLastFile(): FileInfo {
 		const lastFile = this.fileStack.pop();
 		this.currentFile = this.fileStack[this.fileStack.length - 1];
 		return lastFile;
 	}
-	
+
 	/**
 	 * Enters a step. Note that calls to this *surround* applyStep as the index is not available to it.
 	 * @final
@@ -118,7 +135,7 @@ export class DebugState {
 		}
 		return currentStep;
 	}
-	
+
 	/**
 	 * Gets the last (i.e. current) step.
 	 * @final
@@ -134,7 +151,7 @@ export class DebugState {
 		}
 		return currentStep;
 	}
-	
+
 	/**
 	 * Throws this instance as an error.
 	 * @final
@@ -175,7 +192,7 @@ export class DebugState {
 		}
 		console.log(message);
 	}
-	
+
 	/**
 	 * Prints information about the whole stack.
 	 * @final
@@ -191,7 +208,7 @@ export class DebugState {
 	 * Overridable.
 	 */
 	async beforeStep() {
-		
+
 	}
 
 	/**
@@ -199,7 +216,7 @@ export class DebugState {
 	 * Overridable.
 	 */
 	async afterStep() {
-		
+
 	}
 }
 
@@ -381,7 +398,7 @@ appliers["PASTE"] = async function(state) {
 			type: "ADD_ARRAY_ELEMENT",
 			content: value
 		};
-		
+
 		if (!isNaN(this["index"])) {
 			obj.index = this["index"];
 		}
@@ -419,7 +436,7 @@ appliers["ENTER"] = async function (state) {
 			const subArr = path.slice(0, i + 1);
 			state.debugState.throwError('Error', `index sequence ${subArr.join(",")} leads to an undefined state.`);
 		}
-		
+
 		state.currentValue = state.currentValue[idx];
 	}
 };

@@ -14,6 +14,24 @@
 
 import {photocopy, photomerge} from "./patchsteps-utils.js";
 
+// https://github.com/dmitmel/ultimate-crosscode-typedefs/blob/master/patch-steps-lib.d.ts
+export type DiffCore = (a: unknown, b: unknown, settings: DiffSettings) => AnyPatchStep[] | null;
+
+export interface DiffSettings {
+	arrayTrulyDifferentThreshold: number;
+	trulyDifferentThreshold: number;
+	arrayLookahead: number;
+	diffAddNewKey: number;
+	diffAddDelKey: number;
+	diffMulSameKey: number;
+
+	diffCore: DiffCore;
+	comment?: string;
+	commentValue?: string;
+	path: Index[];
+	optimize: boolean;
+}
+
 /**
  * A difference heuristic.
  * @param {any} a The first value to check.
@@ -21,7 +39,7 @@ import {photocopy, photomerge} from "./patchsteps-utils.js";
  * @param {any} settings The involved control settings.
  * @returns {number} A difference value from 0 (same) to 1 (different).
  */
-function diffHeuristic(a, b, settings) {
+function diffHeuristic(a: unknown, b: unknown, settings: Partial<DiffSettings>) {
 	if ((a === null) && (b === null))
 		return 0;
 	if ((a === null) || (b === null))
@@ -91,7 +109,7 @@ function diffHeuristic(a, b, settings) {
  * The actual implementation is different to this description, but follows the same rules.
  * Stack A and the output are the same.
  */
-function diffArrayHeuristic(a, b, settings) {
+function diffArrayHeuristic(a: unknown, b: unknown, settings: Partial<DiffSettings>) {
 	const lookahead = settings.arrayLookahead;
 	let sublog = [];
 	let ia = 0;
@@ -132,13 +150,13 @@ function diffArrayHeuristic(a, b, settings) {
 
 /**
  * Diffs two objects. This is actually an outer wrapper, which provides default settings along with optimization.
- * 
+ *
  * @param {any} a The original value
  * @param {any} b The target value
  * @param {object} [settings] Optional bunch of settings. May include "comment".
  * @return {object[]|null} Null if unpatchable (this'll never occur for two Objects or two Arrays), Array of JSON-ready Patch Steps otherwise
  */
-export function diff(a, b, settings) {
+export function diff(a: unknown, b: unknown, settings: Partial<DiffSettings>) {
 	let trueSettings = photocopy(defaultSettings);
 	if (settings !== void 0)
 		photomerge(trueSettings, settings);
@@ -213,7 +231,7 @@ export function diffEnterLevel(a, b, index, settings) {
 }
 
 // This is the default diffCore.
-function diffInterior(a, b, settings) {
+function diffInterior(a: unknown, b: unknown, settings) {
 	if ((a === null) && (b === null))
 		return [];
 	if ((a === null) || (b === null))

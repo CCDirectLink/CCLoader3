@@ -14,7 +14,7 @@
  * @param {any} b The value to merge from.
  * @returns {any} a
  */
-export function photomerge(a, b) {
+export function photomerge<A, B>(a: A, b: B): A & B {
 	if (b.constructor === Object) {
 		for (let k in b)
 			a[photocopy(k)] = photocopy(b[k]);
@@ -29,10 +29,10 @@ export function photomerge(a, b) {
 
 /**
  * A generic copy function.
- * @param {any} a The value to copy.
+ * @param {any} o The value to copy.
  * @returns {any} copied value
  */
-export function photocopy(o) {
+export function photocopy<O>(o: O): O {
 	if (o) {
 		if (o.constructor === Array)
 			return photomerge([], o);
