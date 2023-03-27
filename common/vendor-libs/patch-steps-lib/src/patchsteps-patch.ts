@@ -13,6 +13,7 @@
  */
 
 import {photocopy, photomerge} from "./patchsteps-utils.js";
+import {Index} from './types.js'
 
 // The following are definitions used for reference in DebugState.
 /*
@@ -43,7 +44,9 @@ export interface StackEntryError {
 	errorMessage: string;
 }
 export interface StackEntryStep {
-	type: "Step"
+	type: "Step",
+	index: Index;
+	name: string;
 }
 export type StackEntry = StackEntryStep | StackEntryError;
 export interface FileInfo {
@@ -220,10 +223,11 @@ export class DebugState {
 	}
 }
 
+export type Applier = (this: StackEntryStep, state: ApplierState) => Promise<void>;
 // Custom extensions are registered here.
 // Their 'this' is the Step, they are passed the state, and they are expected to return a Promise.
 // In practice this is done with async old-style functions.
-export const appliers = {};
+export const appliers: Record<string, Applier> = {};
 
 /*
  * @param {any} a The object to modify

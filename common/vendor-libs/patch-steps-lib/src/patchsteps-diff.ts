@@ -13,6 +13,7 @@
  */
 
 import {photocopy, photomerge} from "./patchsteps-utils.js";
+import { Index } from './types.js'
 
 // https://github.com/dmitmel/ultimate-crosscode-typedefs/blob/master/patch-steps-lib.d.ts
 export type DiffCore = (a: unknown, b: unknown, settings: DiffSettings) => AnyPatchStep[] | null;
@@ -221,7 +222,7 @@ export function diffApplyComment(step, settings) {
  * @param {object} settings Settings.
  * @return {object[]|null} See diff for more details
  */
-export function diffEnterLevel(a, b, index, settings) {
+export function diffEnterLevel(a: unknown, b: unknown, index: Index, settings: DiffSettings): AnyPatchStep[] | null {
 	settings.path.push(index);
 	if (settings.comment !== void 0)
 		settings.commentValue = settings.comment + "." + settings.path.join(".");
