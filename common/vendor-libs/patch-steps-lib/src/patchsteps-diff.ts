@@ -13,7 +13,7 @@
  */
 
 import {photocopy, photomerge} from "./patchsteps-utils.js";
-import {AnyPatchStep, DiffSettings, Index} from './types.js'
+import {AnyPatchStep, BasePatchStep, DiffSettings, Index, PatchStep} from './types.js'
 
 /**
  * A difference heuristic.
@@ -22,15 +22,15 @@ import {AnyPatchStep, DiffSettings, Index} from './types.js'
  * @param {any} settings The involved control settings.
  * @returns {number} A difference value from 0 (same) to 1 (different).
  */
-function diffHeuristic(a: unknown, b: unknown, settings: Partial<DiffSettings>) {
-	if ((a === null) && (b === null))
+function diffHeuristic(a: unknown, b: unknown, settings: DiffSettings): number {
+	if ((a === null) && (b === null) || (a === undefined) && (b === undefined))
 		return 0;
-	if ((a === null) || (b === null))
-		return null;
+	if ((a === null) || (b === null) || (a === undefined) || (b === undefined))
+		return 1;
 	if (a.constructor !== b.constructor)
 		return 1;
 
-	if (a.constructor === Array) {
+	if (Array.isArray(a) && Array.isArray(b)) {
 		let array = diffArrayHeuristic(a, b, settings);
 		if (array.length == 0)
 			return 0;
@@ -51,7 +51,7 @@ function diffHeuristic(a: unknown, b: unknown, settings: Partial<DiffSettings>) 
 			}
 		}
 		return changes / array.length;
-	} else if (a.constructor === Object) {
+	} else if (a.constructor === Object && b.constructor === Object) {
 		let total = [];
 		for (let k in a)
 			total.push(k);
@@ -65,7 +65,7 @@ function diffHeuristic(a: unknown, b: unknown, settings: Partial<DiffSettings>) 
 			} else if ((total[i] in b) && !(total[i] in a)) {
 				change += settings.diffAddDelKey;
 			} else {
-				change += diffHeuristic(a[total[i]], b[total[i]], settings) * settings.diffMulSameKey;
+				change += diffHeuristic((a as Record<string, unknown>)[total[i]], (b as Record<string, unknown>)[total[i]], settings) * settings.diffMulSameKey;
 			}
 		}
 		if (total.length != 0)
@@ -92,7 +92,7 @@ function diffHeuristic(a: unknown, b: unknown, settings: Partial<DiffSettings>) 
  * The actual implementation is different to this description, but follows the same rules.
  * Stack A and the output are the same.
  */
-function diffArrayHeuristic(a: unknown, b: unknown, settings: Partial<DiffSettings>) {
+function diffArrayHeuristic(a: unknown[], b: unknown[], settings: DiffSettings) {
 	const lookahead = settings.arrayLookahead;
 	let sublog = [];
 	let ia = 0;
@@ -190,7 +190,7 @@ export function diff(a: unknown, b: unknown, settings: Partial<DiffSettings>) {
  * @param {object} step The step to add to.
  * @param {object} settings The settings.
  */
-export function diffApplyComment(step, settings) {
+export function diffApplyComment<T extends BasePatchStep>(step: T, settings: DiffSettings) {
 	if (settings.commentValue !== void 0)
 		step.comment = settings.commentValue;
 	return step;
@@ -215,15 +215,15 @@ export function diffEnterLevel(a: unknown, b: unknown, index: Index, settings: D
 
 // This is the default diffCore.
 function diffInterior(a: unknown, b: unknown, settings: DiffSettings) {
-	if ((a === null) && (b === null))
+	if ((a === null) && (b === null) || (a === undefined) && (b === undefined))
 		return [];
-	if ((a === null) || (b === null))
+	if ((a === null) || (b === null) || (a === undefined) || (b === undefined))
 		return null;
 	if (a.constructor !== b.constructor)
 		return null;
-	let log = [];
+	let log: AnyPatchStep[] = [];
 
-	if (a.constructor === Array) {
+	if (Array.isArray(a) && Array.isArray(b)) {
 		let array = diffArrayHeuristic(a, b, settings);
 		let ai = 0;
 		let bi = 0;
@@ -233,10 +233,10 @@ function diffInterior(a: unknown, b: unknown, settings: DiffSettings) {
 		// At patch time, a[ai + x] for arbitrary 'x' is in the live array at [bi + x]
 		for (let i = 0; i < array.length; i++) {
 			if (array[i] == "POPA") {
-				log.push(diffApplyComment({"type": "REMOVE_ARRAY_ELEMENT", "index": bi}, settings));
+				log.push(diffApplyComment({"type": "REMOVE_ARRAY_ELEMENT", "index": bi} as PatchStep.REMOVE_ARRAY_ELEMENT, settings));
 				ai++;
 			} else if (array[i] == "INSERT") {
-				let insertion = diffApplyComment({"type": "ADD_ARRAY_ELEMENT", "index": bi, "content": photocopy(b[bi])}, settings);
+				let insertion = diffApplyComment({"type": "ADD_ARRAY_ELEMENT", "index": bi, "content": photocopy(b[bi])} as PatchStep.ADD_ARRAY_ELEMENT, settings);
 				// Is this a set of elements being inserted at the end?
 				let j;
 				for (j = i + 1; j < array.length; j++)
@@ -256,16 +256,16 @@ function diffInterior(a: unknown, b: unknown, settings: DiffSettings) {
 						log.push({"type": "EXIT"});
 					}
 				} else {
-					log.push(diffApplyComment({"type": "SET_KEY", "index": bi, "content": photocopy(b[bi])}, settings));
+					log.push(diffApplyComment({"type": "SET_KEY", "index": bi, "content": photocopy(b[bi])} as PatchStep.SET_KEY, settings));
 				}
 				ai++;
 				bi++;
 			}
 		}
-	} else if (a.constructor === Object) {
+	} else if (a.constructor === Object && b.constructor === Object) {
 		for (let k in a) {
 			if (k in b) {
-				if (diffHeuristic(a[k], b[k], settings) >= settings.trulyDifferentThreshold) {
+				if (diffHeuristic((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k], settings) >= settings.trulyDifferentThreshold) {
 					log.push(diffApplyComment({"type": "SET_KEY", "index": k, "content": photocopy(b[k])}, settings));
 				} else {
 					let xd = diffEnterLevel(a[k], b[k], k, settings);
