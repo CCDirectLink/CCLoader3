@@ -15,16 +15,16 @@
  * @returns {any} a
  */
 export function photomerge<A, B>(a: A, b: B): A & B {
-	if (b.constructor === Object) {
-		for (let k in b)
-			a[photocopy(k)] = photocopy(b[k]);
-	} else if (b.constructor == Array) {
+   if (Array.isArray(b)) {
 		for (let i = 0; i < b.length; i++)
-			a.push(photocopy(b[i]));
-	} else {
+          (a as any[]).push(photocopy(b[i]));
+   } else if (b instanceof Object) {
+        for (let k in b)
+         (a as Record<string, any>)[photocopy(k)] = photocopy((b as Record<string, any>)[k]);
+   } else {
 		throw new Error("We can't do that! ...Who'd clean up the mess?");
 	}
-	return a;
+	return a as A & B;
 }
 
 /**

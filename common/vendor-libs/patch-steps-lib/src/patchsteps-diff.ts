@@ -13,25 +13,7 @@
  */
 
 import {photocopy, photomerge} from "./patchsteps-utils.js";
-import { Index } from './types.js'
-
-// https://github.com/dmitmel/ultimate-crosscode-typedefs/blob/master/patch-steps-lib.d.ts
-export type DiffCore = (a: unknown, b: unknown, settings: DiffSettings) => AnyPatchStep[] | null;
-
-export interface DiffSettings {
-	arrayTrulyDifferentThreshold: number;
-	trulyDifferentThreshold: number;
-	arrayLookahead: number;
-	diffAddNewKey: number;
-	diffAddDelKey: number;
-	diffMulSameKey: number;
-
-	diffCore: DiffCore;
-	comment?: string;
-	commentValue?: string;
-	path: Index[];
-	optimize: boolean;
-}
+import {AnyPatchStep, DiffSettings, Index} from './types.js'
 
 /**
  * A difference heuristic.

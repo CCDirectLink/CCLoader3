@@ -13,7 +13,17 @@
  */
 
 import {photocopy, photomerge} from "./patchsteps-utils.js";
-import {Index} from './types.js'
+import {
+    AnyPatchStep,
+    Applier,
+    Appliers,
+    ApplierState,
+    FileInfo,
+    Index,
+    ParsedPath,
+    PatchFile,
+    StackEntryStep
+} from './types.js'
 
 // The following are definitions used for reference in DebugState.
 /*
@@ -37,22 +47,6 @@ import {Index} from './types.js'
  *  errorMessage: string;
  * };
  */
-export type ParsedPath = null | [fromGame: true | false | string, url: string];
-export interface StackEntryError {
-	type: "Error";
-	errorType: string;
-	errorMessage: string;
-}
-export interface StackEntryStep {
-	type: "Step",
-	index: Index;
-	name: string;
-}
-export type StackEntry = StackEntryStep | StackEntryError;
-export interface FileInfo {
-	path: string;
-	stack: StackEntry[];
-}
 
 // Error handling for appliers.
 // You are expected to subclass this class if you want additional functionality.
@@ -223,22 +217,10 @@ export class DebugState {
 	}
 }
 
-type Loader = (fromGame: boolean | string, path: string) => Promise<unknown>;
-
-export interface ApplierState {
-	currentValue: unknown;
-	stack: StackEntry[];
-	cloneMap: Map<string, unknown>;
-	loader: Loader;
-	debugState: DebugState;
-	debug: boolean;
-}
-
-export type Applier = (this: StackEntryStep, state: ApplierState) => Promise<void>;
 // Custom extensions are registered here.
 // Their 'this' is the Step, they are passed the state, and they are expected to return a Promise.
 // In practice this is done with async old-style functions.
-export const appliers: Record<string, Applier> = {};
+export const appliers: Appliers = {};
 
 /*
  * @param {any} a The object to modify
@@ -254,7 +236,7 @@ export const appliers: Record<string, Applier> = {};
  *  If not given, will be created. You need to pass your own instance of this to have proper filename tracking.
  * @return {Promise<void>} A Promise
  */
-export async function patch(a: unknown, steps, loader: Loader, debugState?: DebugState) {
+export async function patch(a: unknown, steps: PatchFile, loader: Loader, debugState?: DebugState) {
 	if (!debugState) {
 		debugState = new DebugState();
 		debugState.addFile(null);
@@ -298,7 +280,7 @@ export async function patch(a: unknown, steps, loader: Loader, debugState?: Debu
 	}
 }
 
-async function applyStep(step, state: ApplierState) {
+async function applyStep(step: AnyPatchStep, state: ApplierState) {
 	await state.debugState.beforeStep();
 	state.debugState.getLastStep().name = step["type"];
 	if (!appliers[step["type"]]) {
@@ -309,7 +291,7 @@ async function applyStep(step, state: ApplierState) {
 	await state.debugState.afterStep();
 }
 
-function replaceObjectProperty(object, key, keyword, value) {
+function replaceObjectProperty(object: Record<string, any>, key: string, keyword: string, value) {
 	let oldValue = object[key];
 	// It's more complex than we thought.
 	if (!Array.isArray(keyword) && typeof keyword === "object") {
@@ -493,7 +475,7 @@ appliers["ADD_ARRAY_ELEMENT"] = async function (state) {
 };
 
 // Reintroduced but simplified version of Emileyah's resolveUrl
-function parsePath(url, fromGame) {
+function parsePath(url: string, fromGame) {
 	try {
 		const decomposedUrl = new URL(url);
 		const protocol = decomposedUrl.protocol;
