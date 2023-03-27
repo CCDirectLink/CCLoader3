@@ -58,7 +58,7 @@ export interface FileInfo {
 // You are expected to subclass this class if you want additional functionality.
 export class DebugState {
 		fileStack: FileInfo[];
-		currentFile: FileInfo | null;
+		currentFile: FileInfo;
 
 	// The constructor. The default state of a DebugState is invalid; a file must be added (even if null) to make it valid.
 	constructor() {
@@ -107,14 +107,14 @@ export class DebugState {
 	removeLastFile(): FileInfo {
 		const lastFile = this.fileStack.pop();
 		this.currentFile = this.fileStack[this.fileStack.length - 1];
-		return lastFile;
+		return lastFile!;
 	}
 
 	/**
 	 * Enters a step. Note that calls to this *surround* applyStep as the index is not available to it.
 	 * @final
 	 */
-	addStep(index, name = "") {
+	addStep(index: Index, name = "") {
 		this.currentFile.stack.push({
 			type: "Step",
 			index,
@@ -143,7 +143,7 @@ export class DebugState {
 	 * Gets the last (i.e. current) step.
 	 * @final
 	 */
-	getLastStep() {
+	getLastStep(): StackEntryStep {
 		const stack = this.currentFile.stack;
 		let currentStep = null;
 		for(let index = stack.length - 1; index >= 0; index--) {
@@ -152,14 +152,14 @@ export class DebugState {
 				index = -1;
 			}
 		}
-		return currentStep;
+		return currentStep as StackEntryStep;
 	}
 
 	/**
 	 * Throws this instance as an error.
 	 * @final
 	 */
-	throwError(type, message) {
+	throwError(type: string, message: string) {
 		this.currentFile.stack.push({
 			type: "Error",
 			errorType: type,
@@ -172,7 +172,7 @@ export class DebugState {
 	 * Prints information about a specific file on the stack.
 	 * Overridable.
 	 */
-	printFileInfo(file) {
+	printFileInfo(file: FileInfo) {
 		console.log(`File %c${file.path}`, 'red');
 		let message = '';
 		const stack = file.stack;
@@ -223,6 +223,17 @@ export class DebugState {
 	}
 }
 
+type Loader = (fromGame: boolean | string, path: string) => Promise<unknown>;
+
+export interface ApplierState {
+	currentValue: unknown;
+	stack: StackEntry[];
+	cloneMap: Map<string, unknown>;
+	loader: Loader;
+	debugState: DebugState;
+	debug: boolean;
+}
+
 export type Applier = (this: StackEntryStep, state: ApplierState) => Promise<void>;
 // Custom extensions are registered here.
 // Their 'this' is the Step, they are passed the state, and they are expected to return a Promise.
@@ -243,7 +254,7 @@ export const appliers: Record<string, Applier> = {};
  *  If not given, will be created. You need to pass your own instance of this to have proper filename tracking.
  * @return {Promise<void>} A Promise
  */
-export async function patch(a, steps, loader, debugState) {
+export async function patch(a: unknown, steps, loader: Loader, debugState?: DebugState) {
 	if (!debugState) {
 		debugState = new DebugState();
 		debugState.addFile(null);
@@ -287,7 +298,7 @@ export async function patch(a, steps, loader, debugState) {
 	}
 }
 
-async function applyStep(step, state) {
+async function applyStep(step, state: ApplierState) {
 	await state.debugState.beforeStep();
 	state.debugState.getLastStep().name = step["type"];
 	if (!appliers[step["type"]]) {

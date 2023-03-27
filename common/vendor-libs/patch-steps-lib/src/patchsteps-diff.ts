@@ -232,7 +232,7 @@ export function diffEnterLevel(a: unknown, b: unknown, index: Index, settings: D
 }
 
 // This is the default diffCore.
-function diffInterior(a: unknown, b: unknown, settings) {
+function diffInterior(a: unknown, b: unknown, settings: DiffSettings) {
 	if ((a === null) && (b === null))
 		return [];
 	if ((a === null) || (b === null))
