@@ -13,7 +13,7 @@
  */
 
 import {photocopy, photomerge} from "./patchsteps-utils.js";
-import {AnyPatchStep, BasePatchStep, DiffSettings, Index, PatchStep} from './types.js'
+import {AnyPatchStep, BasePatchStep, DiffSettings, Index, PatchFile, PatchStep, unsafeAssert} from './types.js'
 
 /**
  * A difference heuristic.
@@ -147,10 +147,11 @@ export function diff(a: unknown, b: unknown, settings: Partial<DiffSettings>) {
 		trueSettings.commentValue = trueSettings.comment;
 
 	let result = trueSettings.diffCore(a, b, trueSettings);
+	if (!result) return null;
 	if (trueSettings.optimize) {
 		for (let i = 1; i < result.length; i++) {
 			let here = result[i];
-			let prev = result[i - 1];
+			let prev: AnyPatchStep = result[i - 1];
 			let optimizedOut = false;
 			if (here["type"] == "EXIT") {
 				if (prev["type"] == "EXIT") {
@@ -159,7 +160,8 @@ export function diff(a: unknown, b: unknown, settings: Partial<DiffSettings>) {
 						here["count"] = 1;
 					if (!("count" in prev))
 						prev["count"] = 1;
-					prev["count"] += here["count"];
+					unsafeAssert<PatchStep.EXIT & {count: number}>(prev);
+					prev["count"] += here["count"]!;
 					// Copy comments backwards to try and preserve the unoptimized autocommenter semantics
 					if ("comment" in here)
 						prev["comment"] = here["comment"];
@@ -168,9 +170,9 @@ export function diff(a: unknown, b: unknown, settings: Partial<DiffSettings>) {
 			} else if (here["type"] == "ENTER") {
 				if (prev["type"] == "ENTER") {
 					// Crush ENTERs
-					if (prev["index"].constructor !== Array)
+					if (!Array.isArray(prev["index"]))
 						prev["index"] = [prev["index"]];
-					if (here["index"].constructor !== Array)
+					if (!Array.isArray(here["index"]))
 						here["index"] = [here["index"]];
 					prev["index"] = prev["index"].concat(here["index"]);
 					optimizedOut = true;
@@ -265,8 +267,11 @@ function diffInterior(a: unknown, b: unknown, settings: DiffSettings) {
 	} else if (a.constructor === Object && b.constructor === Object) {
 		for (let k in a) {
 			if (k in b) {
-				if (diffHeuristic((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k], settings) >= settings.trulyDifferentThreshold) {
-					log.push(diffApplyComment({"type": "SET_KEY", "index": k, "content": photocopy(b[k])}, settings));
+				unsafeAssert<Record<string, unknown>>(a);
+				unsafeAssert<Record<string, unknown>>(b);
+
+				if (diffHeuristic(a[k], b[k], settings) >= settings.trulyDifferentThreshold) {
+					log.push(diffApplyComment({"type": "SET_KEY", "index": k, "content": photocopy(b[k])} as PatchStep.SET_KEY, settings));
 				} else {
 					let xd = diffEnterLevel(a[k], b[k], k, settings);
 					if (xd != null) {
@@ -277,16 +282,16 @@ function diffInterior(a: unknown, b: unknown, settings: DiffSettings) {
 						}
 					} else {
 						// should it happen? probably not. will it happen? maybe
-						log.push(diffApplyComment({"type": "SET_KEY", "index": k, "content": photocopy(b[k])}, settings));
+						log.push(diffApplyComment({"type": "SET_KEY", "index": k, "content": photocopy(b[k])} as PatchStep.SET_KEY, settings));
 					}
 				}
 			} else {
-				log.push(diffApplyComment({"type": "SET_KEY", "index": k}, settings));
+				log.push(diffApplyComment({"type": "SET_KEY", "index": k} as PatchStep.SET_KEY, settings));
 			}
 		}
 		for (let k in b)
 			if (!(k in a))
-				log.push(diffApplyComment({"type": "SET_KEY", "index": k, "content": photocopy(b[k])}, settings));
+				log.push(diffApplyComment({"type": "SET_KEY", "index": k, "content": photocopy((b as Record<string, unknown>)[k])} as PatchStep.SET_KEY, settings));
 	} else if (a != b) {
 		return null;
 	}

@@ -158,3 +158,7 @@ export interface DiffSettings {
     path: Index[];
     optimize: boolean;
 }
+
+export function unsafeAssert<T>(val: any): asserts val is T {
+    return true;
+}
