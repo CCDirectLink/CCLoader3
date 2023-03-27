@@ -22,7 +22,7 @@ import {
     Index,
     Loader,
     ParsedPath,
-    PatchFile, PatchStep,
+    PatchFile, PatchStep, StackEntry,
     StackEntryStep, unsafeAssert
 } from './types.js'
 
@@ -296,7 +296,7 @@ async function applyStep(step: AnyPatchStep, state: ApplierState) {
 	await state.debugState.afterStep();
 }
 
-function replaceObjectProperty<O>(object: O, key: keyof O, keyword: string | Record<string, string>, value: string) {
+function replaceObjectProperty<O extends Record<string, string>>(object: O, key: keyof O, keyword: string | Record<string, string>, value: string) {
 	let oldValue = object[key];
 	// It's more complex than we thought.
 	if (!Array.isArray(keyword) && typeof keyword === "object") {
@@ -308,7 +308,7 @@ function replaceObjectProperty<O>(object: O, key: keyof O, keyword: string | Rec
 			}
 		}
 	} else {
-		object[key] = oldValue.replace(new RegExp(keyword, "g"), value);
+		object[key] = oldValue.replace(new RegExp(keyword as string, "g"), value);
 	}
 }
 
@@ -360,8 +360,11 @@ appliers["FOR_IN"] = async function (state) {
 		state.debugState.throwError('ValueError', 'keyword must be set.');
 	}
 
+	unsafeAssert<unknown[] | Array<Record<string, unknown>>>(values);
+
 	for(let i = 0; i < values.length; i++) {
 		const cloneBody = photocopy(body);
+		unsafeAssert<AnyPatchStep>(cloneBody);
 		const value = values[i];
 		valueInsertion(cloneBody, keyword, value);
 		state.debugState.addStep(i, 'VALUE_INDEX');
@@ -430,6 +433,7 @@ appliers["ENTER"] = async function (state) {
 		path = this["index"];
 	for (let i = 0; i < path.length;i++) {
 		const idx = path[i];
+		unsafeAssert<StackEntry>(state.currentValue);
 		state.stack.push(state.currentValue);
 		if (state.currentValue[idx] === undefined) {
 			const subArr = path.slice(0, i + 1);
@@ -482,7 +486,7 @@ appliers["ADD_ARRAY_ELEMENT"] = async function (state) {
 };
 
 // Reintroduced but simplified version of Emileyah's resolveUrl
-function parsePath(url: string, fromGame: boolean) {
+function parsePath(url: string, fromGame: boolean): [(boolean | string), string] {
 	try {
 		const decomposedUrl = new URL(url);
 		const protocol = decomposedUrl.protocol;
@@ -542,7 +546,7 @@ appliers["INCLUDE"] = async function (state) {
 	const data = await state.loader.apply(state, srcPath);
 
 	state.debugState.addFile(srcPath);
-	await patch(state.currentValue, data, state.loader, state.debugState);
+	await patch(state.currentValue, data as PatchFile, state.loader, state.debugState);
 	state.debugState.removeLastFile();
 };
 
