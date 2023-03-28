@@ -52,7 +52,9 @@ function diffHeuristic(a: unknown, b: unknown, settings: DiffSettings): number {
 		}
 		return changes / array.length;
 	} else if (a.constructor === Object && b.constructor === Object) {
-		let total = [];
+		unsafeAssert<Record<string, unknown>>(a);
+		unsafeAssert<Record<string, unknown>>(b);
+		let total: string[] = [];
 		for (let k in a)
 			total.push(k);
 		for (let k in b)
@@ -94,11 +96,11 @@ function diffHeuristic(a: unknown, b: unknown, settings: DiffSettings): number {
  */
 function diffArrayHeuristic(a: unknown[], b: unknown[], settings: DiffSettings) {
 	const lookahead = settings.arrayLookahead;
-	let sublog = [];
+	let sublog: string[] = [];
 	let ia = 0;
 	for (let i = 0; i < b.length; i++) {
 		let validDif = 2;
-		let validSrc = null;
+		let validSrc: number | null = null;
 		for (let j = ia; j < Math.min(ia + lookahead, a.length); j++) {
 			let dif = diffHeuristic(a[j], b[i], settings);
 			if (dif < validDif) {
@@ -265,6 +267,8 @@ function diffInterior(a: unknown, b: unknown, settings: DiffSettings) {
 			}
 		}
 	} else if (a.constructor === Object && b.constructor === Object) {
+		unsafeAssert<Record<string, unknown>>(a);
+		unsafeAssert<Record<string, unknown>>(b);
 		for (let k in a) {
 			if (k in b) {
 				unsafeAssert<Record<string, unknown>>(a);
