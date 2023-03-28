@@ -121,17 +121,18 @@ export class DebugState {
 	 * Leaves a step.
 	 * @final
 	 */
-	removeLastStep() {
+	removeLastStep(): StackEntryStep {
 		const stack = this.currentFile.stack;
-		let currentStep = null;
+		let currentStep: StackEntryStep | null = null;
 		for(let index = stack.length - 1; index >= 0; index--) {
-			if (stack[index].type === "Step") {
-				currentStep = stack[index];
+			const entry = stack[index];
+			if (entry.type === "Step") {
+				currentStep = entry;
 				stack.splice(index,1);
 				index = -1;
 			}
 		}
-		return currentStep;
+		return currentStep!;
 	}
 
 	/**
@@ -140,14 +141,15 @@ export class DebugState {
 	 */
 	getLastStep(): StackEntryStep {
 		const stack = this.currentFile.stack;
-		let currentStep = null;
+		let currentStep: StackEntryStep | null = null;
 		for(let index = stack.length - 1; index >= 0; index--) {
-			if (stack[index].type === "Step") {
-				currentStep = stack[index];
+			const entry = stack[index];
+			if (entry.type === "Step") {
+				currentStep = entry;
 				index = -1;
 			}
 		}
-		return currentStep as StackEntryStep;
+		return currentStep!;
 	}
 
 	/**
@@ -296,19 +298,19 @@ async function applyStep(step: AnyPatchStep, state: ApplierState) {
 	await state.debugState.afterStep();
 }
 
-function replaceObjectProperty<O extends Record<string, string>>(object: O, key: keyof O, keyword: string | Record<string, string>, value: string) {
+function replaceObjectProperty<O extends Record<number | string, string>>(object: O, key: keyof O, keyword: string | RegExp | Record<string, string | RegExp>, value: string | {[replacementId: string]: string | number}) {
 	let oldValue = object[key];
 	// It's more complex than we thought.
 	if (!Array.isArray(keyword) && typeof keyword === "object") {
 		// go through each and check if it matches anywhere.
 		for(const property in keyword) {
 			if (keyword[property]) {
-				object[key] = oldValue.replace(new RegExp(keyword[property], "g"), value[property] || "");
+				object[key] = oldValue.replace(new RegExp(keyword[property], "g"), value[property] || "") as O[keyof O];
 				oldValue = object[key];
 			}
 		}
 	} else {
-		object[key] = oldValue.replace(new RegExp(keyword as string, "g"), value);
+		object[key] = oldValue.replace(new RegExp(keyword, "g"), value) as O[keyof O];
 	}
 }
 
@@ -318,12 +320,12 @@ function replaceObjectProperty<O extends Record<string, string>>(object: O, key:
  * @param {String| {[replacementId]: string | number}} value The value the replace the match
  * @returns {void}
  * */
-function valueInsertion(obj: Record<string, unknown>, keyword: RegExp | {[replacementId: string]: RegExp}, value: string | {[replacementId: string]: string | number}) {
+function valueInsertion(obj: Record<string, unknown> | unknown[], keyword: string | RegExp | Record<string, string | RegExp>, value: string | {[replacementId: string]: string | number}) {
 	if (Array.isArray(obj)) {
 		for (let index = 0; index < obj.length; index++) {
 			const child = obj[index];
-			if (typeof child  === "string") {
-				replaceObjectProperty(obj, index, keyword, value);
+			if (typeof child === "string") {
+				replaceObjectProperty(obj as Record<number, string>, index, keyword, value);
 			} else if (typeof child === "object") {
 				valueInsertion(child, keyword, value);
 			}
@@ -333,9 +335,9 @@ function valueInsertion(obj: Record<string, unknown>, keyword: RegExp | {[replac
 			if (!obj[key])
 				continue;
 			if (typeof obj[key] === "string") {
-				replaceObjectProperty(obj, key, keyword, value);
+				replaceObjectProperty(obj as Record<string, string>, key, keyword, value);
 			} else {
-				valueInsertion(obj[key], keyword, value);
+				valueInsertion(obj[key] as Record<string, string>, keyword, value);
 			}
 		}
 	}
@@ -360,11 +362,8 @@ appliers["FOR_IN"] = async function (state) {
 		state.debugState.throwError('ValueError', 'keyword must be set.');
 	}
 
-	unsafeAssert<unknown[] | Array<Record<string, unknown>>>(values);
-
 	for(let i = 0; i < values.length; i++) {
 		const cloneBody = photocopy(body);
-		unsafeAssert<AnyPatchStep>(cloneBody);
 		const value = values[i];
 		valueInsertion(cloneBody, keyword, value);
 		state.debugState.addStep(i, 'VALUE_INDEX');
@@ -402,13 +401,13 @@ appliers["PASTE"] = async function(state) {
 		const obj = {
 			type: "ADD_ARRAY_ELEMENT",
 			content: value,
-			...(!isNaN(this["index"]) ? {index: this["index"]} : {})
+			...(typeof this["index"] === 'number' && !isNaN(this["index"]) ? {index: this["index"]} : {})
 		};
 		await applyStep(obj as PatchStep.ADD_ARRAY_ELEMENT, state);
 	} else if (typeof state.currentValue === "object") {
 		await applyStep({
 			type: "SET_KEY",
-			index: this["index"],
+			index: this["index"]!,
 			content: value
 		}, state);
 	} else {
@@ -428,9 +427,7 @@ appliers["ENTER"] = async function (state) {
 		state.debugState.throwError('Error', 'index must be set.');
 	}
 
-	let path = [this["index"]];
-	if (Array.isArray(this["index"]))
-		path = this["index"];
+	const path = Array.isArray(this["index"]) ? this["index"] : [this["index"]];
 	for (let i = 0; i < path.length;i++) {
 		const idx = path[i];
 		unsafeAssert<StackEntry>(state.currentValue);
@@ -446,7 +443,7 @@ appliers["ENTER"] = async function (state) {
 
 appliers["EXIT"] = async function (state) {
 	let count = 1;
-	if ("count" in this)
+	if (this["count"] !== undefined)
 		count = this["count"];
 	for (let i = 0; i < count; i++) {
 		if (state.stack.length === 0) {
@@ -478,7 +475,7 @@ appliers["REMOVE_ARRAY_ELEMENT"] = async function (state) {
 appliers["ADD_ARRAY_ELEMENT"] = async function (state) {
 	unsafeAssert<unknown[]>(state.currentValue);
 
-	if ("index" in this) {
+	if (this["index"] !== undefined) {
 		state.currentValue.splice(this["index"], 0, photocopy(this["content"]));
 	} else {
 		state.currentValue.push(photocopy(this["content"]));
@@ -521,17 +518,16 @@ appliers["IMPORT"] = async function (state) {
 	const srcPath = parsePath(this["src"], true);
 	let obj = await state.loader.apply(state, srcPath);
 
-	if ("path" in this) {
-		const path = this["path"];
-		if (!Array.isArray(path)) {
+	if (this["path"] !== undefined) {
+		if (!Array.isArray(this["path"])) {
 			state.debugState.throwError('ValueError', 'path must be an array.');
 		}
-		for (let i = 0; i < path.length; i++)
+		for (let i = 0; i < this["path"].length; i++)
 			obj = obj[this["path"][i]];
 	}
 
-	if ("index" in this) {
-		state.currentValue[this["index"]] = photocopy(obj);
+	if (this["index"] !== undefined) {
+		state.currentValue![this["index"]] = photocopy(obj);
 	} else {
 		photomerge(state.currentValue, obj);
 	}
@@ -572,4 +568,4 @@ appliers["MERGE_CONTENT"] = async function (state) {
 	}
 
 	photomerge(state.currentValue, this["content"]);
-}
+};

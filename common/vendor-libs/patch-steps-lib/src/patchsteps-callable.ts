@@ -1,13 +1,5 @@
 import {appliers, DebugState} from "./patchsteps-patch.js";
 
-/**
- * @typedef State
- * @property {unknown} currentValue
- * @property {unknown[]} stack
- * @property {(fromGame: boolean| string, path: string) => Promise<any>}
- * @property {DebugState} debugState
- * @property {boolean} debug
- */
 export interface State {
 	currentValue: unknown,
 	stack: unknown[],
@@ -18,11 +10,6 @@ export interface State {
 /**
  * A user defined step that is distinguishable from builtin PatchSteps.
  * Errors that occur in callables are not handled by the PatchSteps interpreter.
- *
- * @async
- * @callback Callable
- * @param {State} state is the internal PatchStep state.
- * @param {unknown} args is the user supplied arguments.
  */
 export type Callable = (state: State, args: unknown) => Promise<void>;
 
@@ -30,10 +17,6 @@ export type Callable = (state: State, args: unknown) => Promise<void>;
 /* @type {Map<string,Callable>} */
 const callables = new Map;
 
-/**
- * @param {string} id
- * @param {Callable} callable
- */
 export function register(id: string, callable: Callable) {
 	if (typeof id !== "string") {
 		throw Error('Id must be a string');

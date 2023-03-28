@@ -141,7 +141,7 @@ export interface ApplierState {
     debug: boolean;
 }
 
-export type Applier<T extends BasePatchStep> = (this: StackEntryStep & T, state: ApplierState) => Promise<void>;
+export type Applier<T extends BasePatchStep> = (this: T, state: ApplierState) => Promise<void>;
 export type Appliers = {
     [K in keyof PatchStepsRegistry]: Applier<PatchStepsRegistry[K]>
 }
