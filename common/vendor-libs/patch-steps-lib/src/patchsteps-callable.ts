@@ -13,9 +13,7 @@ export interface State {
  */
 export type Callable = (state: State, args: unknown) => Promise<void>;
 
-
-/* @type {Map<string,Callable>} */
-const callables = new Map;
+const callables = new Map<string, Callable>();
 
 export function register(id: string, callable: Callable) {
 	if (typeof id !== "string") {
@@ -52,7 +50,7 @@ appliers["CALL"] = async function(state: State) {
 	const callable = callables.get(id);
 
 	try {
-		await callable(state, args);
+		await callable!(state, args);
 	} catch (e) {
 		if (e !== state.debugState) {
 			// So they know what happened

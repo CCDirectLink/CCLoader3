@@ -26,39 +26,16 @@ import {
     StackEntryStep, unsafeAssert
 } from './types.js'
 
-// The following are definitions used for reference in DebugState.
-/*
- * ParsedPath is actually any type that translateParsedPath can understand.
- * And translateParsedPath can be overridden by the user.
- * But the types declared here are those that will be received no matter what.
- * declare type ParsedPath = null | [fromGame: true | false | string, url: string];
- *
- * declare type FileInfo = {
- *  path: string;
- *  stack: StackEntry[];
- * };
- *
- * declare type StackEntry = StackEntryStep | StackEntryError;
- * declare type StackEntryStep = {
- *  type: "Step";
- * };
- * declare type StackEntryError = {
- *  type: "Error";
- *  errorType: string;
- *  errorMessage: string;
- * };
- */
-
 // Error handling for appliers.
 // You are expected to subclass this class if you want additional functionality.
 export class DebugState {
 		fileStack: FileInfo[];
-		currentFile?: FileInfo;
+		currentFile: FileInfo | null;
 
 	// The constructor. The default state of a DebugState is invalid; a file must be added (even if null) to make it valid.
 	constructor() {
-		// FileInfo[]
 		this.fileStack = [];
+		this.currentFile = null;
 	}
 
 	/**
@@ -224,18 +201,18 @@ export class DebugState {
 export const appliers = {} as Appliers;
 
 /*
- * @param {any} a The object to modify
- * @param {object|object[]} steps The patch, fresh from the JSON. Can be in legacy or Patch Steps format.
- * @param {(fromGame: boolean | string, path: string) => Promise<any>} loader The loading function.
+ * @param a The object to modify
+ * @param steps The patch, fresh from the JSON. Can be in legacy or Patch Steps format.
+ * @param loader The loading function.
  *  NOTE! IF CHANGING THIS, KEEP IN MIND DEBUGSTATE translatePath GETS ARGUMENTS ARRAY OF THIS.
  *  ALSO KEEP IN MIND THE parsePath FUNCTION!
  *  For fromGame: false this gets a file straight from the mod, such as "package.json".
  *  For fromGame: true this gets a file from the game, which is patched by the host if relevant.
  *  If the PatchSteps file passes a protocol that is not understood, then, and only then, will a string be passed (without the ":" at the end)
  *  In this case, fromGame is set to that string, instead.
- * @param [debugState] debugState The DebugState stack tracer.
+ * @param debugState The DebugState stack tracer.
  *  If not given, will be created. You need to pass your own instance of this to have proper filename tracking.
- * @return {Promise<void>} A Promise
+ * @return A Promise
  */
 export async function patch(a: unknown, steps: PatchFile, loader: Loader, debugState?: DebugState) {
 	if (!debugState) {
@@ -313,10 +290,9 @@ function replaceObjectProperty<O extends Object>(object: O, key: keyof O, keywor
 }
 
 /**
- * @param {object} obj The object to search and replace the values of
- * @param {RegExp| {[replacementId: string]: RegExp}} keyword The expression to match against
- * @param {String| {[replacementId]: string | number}} value The value the replace the match
- * @returns {void}
+ * @param obj The object to search and replace the values of
+ * @param keyword The expression to match against
+ * @param value The value the replace the match
  * */
 function valueInsertion(obj: unknown, keyword: string | Record<string, string>, value: string | {[replacementId: string]: string | number}) {
 	if (Array.isArray(obj)) {

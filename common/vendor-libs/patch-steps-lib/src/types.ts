@@ -114,6 +114,18 @@ export type AnyPatchStep = Extract<PatchStepsRegistry[keyof PatchStepsRegistry],
 export type PatchFile = AnyPatchStep[] | Record<string, unknown>;
 
 export type ParsedPath = null | [fromGame: true | false | string, url: string];
+
+// The following are definitions used for reference in DebugState.
+/*
+ * ParsedPath is actually any type that translateParsedPath can understand.
+ * And translateParsedPath can be overridden by the user.
+ * But the types declared here are those that will be received no matter what.
+ */
+export interface FileInfo {
+  path: string;
+  stack: StackEntry[];
+}
+
 export interface StackEntryError {
   type: "Error";
   errorType: string;
@@ -125,10 +137,6 @@ export interface StackEntryStep {
   name: string;
 }
 export type StackEntry = StackEntryStep | StackEntryError;
-export interface FileInfo {
-  path: string;
-  stack: StackEntry[];
-}
 
 export type Loader = (fromGame: boolean | string, path: string) => Promise<unknown>;
 

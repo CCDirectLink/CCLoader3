@@ -10,9 +10,9 @@
 /**
  * A generic merge function.
  * NOTE: This should match Patch Steps specification, specifically how IMPORT merging works.
- * @param {any} a The value to merge into.
- * @param {any} b The value to merge from.
- * @returns {any} a
+ * @param a The value to merge into.
+ * @param b The value to merge from.
+ * @returns a
  */
 export function photomerge<A, B>(a: A, b: B): A & B {
    if (Array.isArray(b)) {
@@ -29,8 +29,8 @@ export function photomerge<A, B>(a: A, b: B): A & B {
 
 /**
  * A generic copy function.
- * @param {any} o The value to copy.
- * @returns {any} copied value
+ * @param o The value to copy.
+ * @returns copied value
  */
 export function photocopy<O>(o: O): O {
 	if (o) {

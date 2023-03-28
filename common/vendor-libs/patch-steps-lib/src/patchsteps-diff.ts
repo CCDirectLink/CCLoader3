@@ -17,10 +17,10 @@ import {AnyPatchStep, BasePatchStep, DiffSettings, Index, PatchFile, PatchStep, 
 
 /**
  * A difference heuristic.
- * @param {any} a The first value to check.
- * @param {any} b The second value to check.
- * @param {any} settings The involved control settings.
- * @returns {number} A difference value from 0 (same) to 1 (different).
+ * @param a The first value to check.
+ * @param b The second value to check.
+ * @param settings The involved control settings.
+ * @returns A difference value from 0 (same) to 1 (different).
  */
 function diffHeuristic(a: unknown, b: unknown, settings: DiffSettings): number {
 	if ((a === null) && (b === null) || (a === undefined) && (b === undefined))
@@ -136,10 +136,10 @@ function diffArrayHeuristic(a: unknown[], b: unknown[], settings: DiffSettings) 
 /**
  * Diffs two objects. This is actually an outer wrapper, which provides default settings along with optimization.
  *
- * @param {any} a The original value
- * @param {any} b The target value
- * @param {object} [settings] Optional bunch of settings. May include "comment".
- * @return {object[]|null} Null if unpatchable (this'll never occur for two Objects or two Arrays), Array of JSON-ready Patch Steps otherwise
+ * @param a The original value
+ * @param b The target value
+ * @param settings Optional bunch of settings. May include "comment".
+ * @return Null if unpatchable (this'll never occur for two Objects or two Arrays), Array of JSON-ready Patch Steps otherwise
  */
 export function diff(a: unknown, b: unknown, settings: Partial<DiffSettings>) {
 	let trueSettings = photocopy(defaultSettings);
@@ -191,8 +191,8 @@ export function diff(a: unknown, b: unknown, settings: Partial<DiffSettings>) {
 
 /**
  * Adds a comment to the step if there is a comment in settings.commentValue.
- * @param {object} step The step to add to.
- * @param {object} settings The settings.
+ * @param step The step to add to.
+ * @param settings The settings.
  */
 export function diffApplyComment<T extends BasePatchStep>(step: T, settings: DiffSettings) {
 	if (settings.commentValue !== void 0)
@@ -202,11 +202,11 @@ export function diffApplyComment<T extends BasePatchStep>(step: T, settings: Dif
 
 /**
  * Handles the bookkeeping in settings necessary when entering a level of the diff.
- * @param {any} a The original value
- * @param {any} b The target value
- * @param {string | number} index The index.
- * @param {object} settings Settings.
- * @return {object[]|null} See diff for more details
+ * @param a The original value
+ * @param b The target value
+ * @param index The index.
+ * @param settings Settings.
+ * @return See diff for more details
  */
 export function diffEnterLevel(a: unknown, b: unknown, index: Index, settings: DiffSettings): AnyPatchStep[] | null {
 	settings.path.push(index);
