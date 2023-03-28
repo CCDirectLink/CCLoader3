@@ -269,7 +269,7 @@ async function applyStep(step: AnyPatchStep, state: ApplierState) {
 		state.debugState.getLastStep().name = '';
 		state.debugState.throwError('TypeError',`${step['type']} is not a valid type.`);
 	}
-	await appliers[step["type"]].call(step, state);
+	await (appliers[step["type"]] as Applier<any>).call(step, state);
 	await state.debugState.afterStep();
 }
 
@@ -280,7 +280,7 @@ function replaceObjectProperty<O extends Object>(object: O, key: keyof O, keywor
 		// go through each and check if it matches anywhere.
 		for(const property in keyword) {
 			if (keyword[property]) {
-				object[key] = oldValue.replace(new RegExp(keyword[property], "g"), value[property] || "") as O[keyof O];
+				object[key] = oldValue.replace(new RegExp(keyword[property], "g"), (value as {[replacementId: string]: string | number})[property] as string || "") as O[keyof O];
 				oldValue = object[key] as string;
 			}
 		}
@@ -305,6 +305,7 @@ function valueInsertion(obj: unknown, keyword: string | Record<string, string>, 
 			}
 		}
 	} else if (typeof obj === "object") {
+		unsafeAssert<Record<string, unknown>>(obj);
 		for(let key in obj) {
 			if (!obj[key])
 				continue;
@@ -406,12 +407,12 @@ appliers["ENTER"] = async function (state) {
 		const idx = path[i];
 		unsafeAssert<StackEntry>(state.currentValue);
 		state.stack.push(state.currentValue);
-		if (state.currentValue[idx] === undefined) {
+		if (state.currentValue[idx as keyof StackEntry] === undefined) {
 			const subArr = path.slice(0, i + 1);
 			state.debugState.throwError('Error', `index sequence ${subArr.join(",")} leads to an undefined state.`);
 		}
 
-		state.currentValue = state.currentValue[idx];
+		state.currentValue = state.currentValue[idx as keyof StackEntry];
 	}
 };
 
@@ -497,10 +498,11 @@ appliers["IMPORT"] = async function (state) {
 			state.debugState.throwError('ValueError', 'path must be an array.');
 		}
 		for (let i = 0; i < this["path"].length; i++)
-			obj = obj[this["path"][i]];
+			obj = (obj as Record<string | number, unknown>)[this["path"][i]];
 	}
 
 	if (this["index"] !== undefined) {
+		unsafeAssert<Record<string | number, unknown>>(state.currentValue);
 		state.currentValue![this["index"]] = photocopy(obj);
 	} else {
 		photomerge(state.currentValue, obj);
