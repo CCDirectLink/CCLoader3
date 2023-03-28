@@ -53,21 +53,19 @@ import {
 // You are expected to subclass this class if you want additional functionality.
 export class DebugState {
 		fileStack: FileInfo[];
-		currentFile: FileInfo;
+		currentFile?: FileInfo;
 
 	// The constructor. The default state of a DebugState is invalid; a file must be added (even if null) to make it valid.
 	constructor() {
 		// FileInfo[]
 		this.fileStack = [];
-		// FileInfo
-		this.currentFile = null;
 	}
 
 	/**
 	 * Translates a ParsedPath into a string.
 	 * Overridable.
 	 */
-	translateParsedPath(parsedPath: ParsedPath) {
+	translateParsedPath(parsedPath: ParsedPath | null): string {
 		if (parsedPath === null)
 			return "(unknown file)";
 		// By default, we know nothing.
@@ -85,7 +83,7 @@ export class DebugState {
 	 * Enters a file by parsedPath. Do not override.
 	 * @final
 	 */
-	addFile(parsedPath: ParsedPath) {
+	addFile(parsedPath: ParsedPath): void {
 		const path = this.translateParsedPath(parsedPath);
 		const fileInfo = {
 			path,
@@ -109,8 +107,8 @@ export class DebugState {
 	 * Enters a step. Note that calls to this *surround* applyStep as the index is not available to it.
 	 * @final
 	 */
-	addStep(index: Index, name = "") {
-		this.currentFile.stack.push({
+	addStep(index: Index, name = ""): void {
+		this.currentFile!.stack.push({
 			type: "Step",
 			index,
 			name
@@ -122,7 +120,7 @@ export class DebugState {
 	 * @final
 	 */
 	removeLastStep(): StackEntryStep {
-		const stack = this.currentFile.stack;
+		const stack = this.currentFile!.stack;
 		let currentStep: StackEntryStep | null = null;
 		for(let index = stack.length - 1; index >= 0; index--) {
 			const entry = stack[index];
@@ -140,7 +138,7 @@ export class DebugState {
 	 * @final
 	 */
 	getLastStep(): StackEntryStep {
-		const stack = this.currentFile.stack;
+		const stack = this.currentFile!.stack;
 		let currentStep: StackEntryStep | null = null;
 		for(let index = stack.length - 1; index >= 0; index--) {
 			const entry = stack[index];
@@ -156,8 +154,8 @@ export class DebugState {
 	 * Throws this instance as an error.
 	 * @final
 	 */
-	throwError(type: string, message: string) {
-		this.currentFile.stack.push({
+	throwError(type: string, message: string): void {
+		this.currentFile!.stack.push({
 			type: "Error",
 			errorType: type,
 			errorMessage: message
@@ -169,7 +167,7 @@ export class DebugState {
 	 * Prints information about a specific file on the stack.
 	 * Overridable.
 	 */
-	printFileInfo(file: FileInfo) {
+	printFileInfo(file: FileInfo): void {
 		console.log(`File %c${file.path}`, 'red');
 		let message = '';
 		const stack = file.stack;
@@ -197,7 +195,7 @@ export class DebugState {
 	 * Prints information about the whole stack.
 	 * @final
 	 */
-	print() {
+	print(): void {
 		for(let fileIndex = 0; fileIndex < this.fileStack.length; fileIndex++) {
 			this.printFileInfo(this.fileStack[fileIndex]);
 		}
@@ -207,7 +205,7 @@ export class DebugState {
 	 * Run at the start of applyStep; after the step has been entered formally, but before executing it.
 	 * Overridable.
 	 */
-	async beforeStep() {
+	async beforeStep(): Promise<void> {
 
 	}
 
@@ -215,7 +213,7 @@ export class DebugState {
 	 * Run at the end of applyStep; after executing the step, but before leaving it formally.
 	 * Overridable.
 	 */
-	async afterStep() {
+	async afterStep(): Promise<void> {
 
 	}
 }
@@ -223,7 +221,7 @@ export class DebugState {
 // Custom extensions are registered here.
 // Their 'this' is the Step, they are passed the state, and they are expected to return a Promise.
 // In practice this is done with async old-style functions.
-export const appliers: Appliers = {} as any; // TODO(lleyton): no.
+export const appliers = {} as Appliers;
 
 /*
  * @param {any} a The object to modify
@@ -298,19 +296,19 @@ async function applyStep(step: AnyPatchStep, state: ApplierState) {
 	await state.debugState.afterStep();
 }
 
-function replaceObjectProperty<O extends Record<number | string, string>>(object: O, key: keyof O, keyword: string | RegExp | Record<string, string | RegExp>, value: string | {[replacementId: string]: string | number}) {
-	let oldValue = object[key];
+function replaceObjectProperty<O extends Object>(object: O, key: keyof O, keyword: string | Record<string, string>, value: string | {[replacementId: string]: string | number}) {
+	let oldValue = object[key] as string;
 	// It's more complex than we thought.
 	if (!Array.isArray(keyword) && typeof keyword === "object") {
 		// go through each and check if it matches anywhere.
 		for(const property in keyword) {
 			if (keyword[property]) {
 				object[key] = oldValue.replace(new RegExp(keyword[property], "g"), value[property] || "") as O[keyof O];
-				oldValue = object[key];
+				oldValue = object[key] as string;
 			}
 		}
 	} else {
-		object[key] = oldValue.replace(new RegExp(keyword, "g"), value) as O[keyof O];
+		object[key] = oldValue.replace(new RegExp(keyword as string, "g"), value as string) as O[keyof O];
 	}
 }
 
@@ -320,12 +318,12 @@ function replaceObjectProperty<O extends Record<number | string, string>>(object
  * @param {String| {[replacementId]: string | number}} value The value the replace the match
  * @returns {void}
  * */
-function valueInsertion(obj: Record<string, unknown> | unknown[], keyword: string | RegExp | Record<string, string | RegExp>, value: string | {[replacementId: string]: string | number}) {
+function valueInsertion(obj: unknown, keyword: string | Record<string, string>, value: string | {[replacementId: string]: string | number}) {
 	if (Array.isArray(obj)) {
 		for (let index = 0; index < obj.length; index++) {
 			const child = obj[index];
 			if (typeof child === "string") {
-				replaceObjectProperty(obj as Record<number, string>, index, keyword, value);
+				replaceObjectProperty(obj, index, keyword, value);
 			} else if (typeof child === "object") {
 				valueInsertion(child, keyword, value);
 			}
@@ -337,7 +335,7 @@ function valueInsertion(obj: Record<string, unknown> | unknown[], keyword: strin
 			if (typeof obj[key] === "string") {
 				replaceObjectProperty(obj as Record<string, string>, key, keyword, value);
 			} else {
-				valueInsertion(obj[key] as Record<string, string>, keyword, value);
+				valueInsertion(obj[key], keyword, value);
 			}
 		}
 	}
@@ -365,7 +363,7 @@ appliers["FOR_IN"] = async function (state) {
 	for(let i = 0; i < values.length; i++) {
 		const cloneBody = photocopy(body);
 		const value = values[i];
-		valueInsertion(cloneBody, keyword, value);
+		valueInsertion(cloneBody, keyword, value as { [replacementId: string]: string | number; });
 		state.debugState.addStep(i, 'VALUE_INDEX');
 		for (let index = 0; index < cloneBody.length; index++) {
 			const statement = cloneBody[index];
