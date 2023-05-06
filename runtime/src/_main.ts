@@ -8,6 +8,7 @@ import { namespace as patchList } from './patch-list.js';
 import { namespace as impactInitHooks } from './impact-init-hooks.js';
 import { namespace as impactModuleHooks } from './impact-module-hooks.js';
 import { namespace as resources } from './resources.js';
+import { namespace as moduleCache } from './module-cache.js';
 
 import './error-screen.js';
 import './resources-injections.js';
@@ -28,6 +29,7 @@ export default class RuntimeModMainClass implements modloader.Mod.PluginClass {
       patchList,
       impactInitHooks,
       impactModuleHooks,
+      moduleCache,
       resources,
     });
   }
