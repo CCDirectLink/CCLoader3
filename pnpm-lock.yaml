@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 dependencies:
   jszip:
     specifier: '=3.10.1'
@@ -52,8 +56,8 @@ devDependencies:
     specifier: ~4.8.4
     version: 4.8.4
   ultimate-crosscode-typedefs:
-    specifier: github:dmitmel/ultimate-crosscode-typedefs
-    version: github.com/dmitmel/ultimate-crosscode-typedefs/160a1d3e63c76c5caa2601095c3061b89aade569
+    specifier: github:CCDirectLink/ultimate-crosscode-typedefs
+    version: github.com/CCDirectLink/ultimate-crosscode-typedefs/9a0fd3ea3c6ea57822fbbedff0cee078b768a069
 
 packages:
 
@@ -1571,6 +1575,17 @@ packages:
       readable-stream: 3.6.2
     dev: true
 
+  github.com/CCDirectLink/ultimate-crosscode-typedefs/9a0fd3ea3c6ea57822fbbedff0cee078b768a069:
+    resolution: {tarball: https://codeload.github.com/CCDirectLink/ultimate-crosscode-typedefs/tar.gz/9a0fd3ea3c6ea57822fbbedff0cee078b768a069}
+    name: ultimate-crosscode-typedefs
+    version: 0.0.1
+    engines: {node: '>=10.0.0'}
+    dependencies:
+      '@types/jquery': 1.10.31
+      '@types/node': 18.15.3
+      '@types/semver': 6.2.3
+    dev: true
+
   github.com/dmitmel/eslint-config-dmitmel/690f1b1121d342fcc8ee511ca9f2af7502f53db6(eslint@8.36.0):
     resolution: {tarball: https://codeload.github.com/dmitmel/eslint-config-dmitmel/tar.gz/690f1b1121d342fcc8ee511ca9f2af7502f53db6}
     id: github.com/dmitmel/eslint-config-dmitmel/690f1b1121d342fcc8ee511ca9f2af7502f53db6
@@ -1581,15 +1596,4 @@ packages:
       eslint: '>=8.17.0'
     dependencies:
       eslint: 8.36.0
-    dev: true
-
-  github.com/dmitmel/ultimate-crosscode-typedefs/160a1d3e63c76c5caa2601095c3061b89aade569:
-    resolution: {tarball: https://codeload.github.com/dmitmel/ultimate-crosscode-typedefs/tar.gz/160a1d3e63c76c5caa2601095c3061b89aade569}
-    name: ultimate-crosscode-typedefs
-    version: 0.0.1
-    engines: {node: '>=10.0.0'}
-    dependencies:
-      '@types/jquery': 1.10.31
-      '@types/node': 18.15.3
-      '@types/semver': 6.2.3
     dev: true
