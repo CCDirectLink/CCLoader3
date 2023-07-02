@@ -35,6 +35,9 @@ export default class RuntimeModMainClass implements modloader.Mod.PluginClass {
   }
 
   public onImpactInit(): void {
+    for (let [_, mod] of modloader.loadedMods)
+      if (mod.manifest.modPrefix)
+        moduleCache.registerModPrefix(mod.manifest.modPrefix, mod.baseDirectory.substring(7));
     for (let cb of impactInitHooks.callbacks) cb();
   }
 

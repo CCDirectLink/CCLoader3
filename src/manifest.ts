@@ -103,6 +103,7 @@ export class Validator {
 
       this.assertAssets(['assets'], data.assets);
       this.assertType(['assetsDir'], data.assetsDir, [Type.string], true);
+      this.assertType(['modPrefix'], data.modPrefix, [Type.string], true);
 
       this.assertType(['plugin'], data.plugin, [Type.string], true);
       this.assertType(['preload'], data.preload, [Type.string], true);
