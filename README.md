@@ -12,20 +12,13 @@ https://stronghold.openkrosskod.org/~dmitmel/ccloader3/
 ## Building from source
 
 ```bash
+npm i -g pnpm
 cd /somewhere/but/preferably/inside/the/crosscode/directory
 git clone https://github.com/CCDirectLink/CCLoader3.git ccloader3
 cd ccloader3
-npm install
-mv runtime/src/extension-preloader.ts .
-npm run build
-mv extension-preloader.ts runtime/src
-npm run build
+pnpm install
+pnpm build
 ```
-
-Yes, that moving about of the extension-preloader is intentional and required. It is a bug in how
-TypeScript compiles files in alphabetical order, and the extension-preloader requires a file that
-has not been built yet according to the alphabetical order. This will be fixed once the module
-structure of the modloader is redone.
 
 Then edit the game's `package.json` and point the path in the `main` field to the location of the
 `main.html` page in the `ccloader3` directory.
