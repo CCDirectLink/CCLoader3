@@ -1,0 +1,11 @@
+{
+  "name": "@ccloader3/core",
+  "private": true,
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@ccloader3/common": "workspace:*",
+    "@ccloader3/runtime": "workspace:*"
+  }
+}

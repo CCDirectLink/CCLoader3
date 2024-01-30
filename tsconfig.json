@@ -1,23 +1,20 @@
 {
-  "include": [
-    "src",
-    "node_modules/ultimate-crosscode-typedefs/nw.d.ts",
-    "node_modules/ultimate-crosscode-typedefs/modloader.d.ts"
-  ],
   "compilerOptions": {
-    "composite": true,
-    "rootDir": "src",
-    "outDir": "dist",
-    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "strict": true,
-    "module": "esnext",
-    "moduleResolution": "node",
     "target": "es2017",
-    "allowJs": true,
-    "forceConsistentCasingInFileNames": true
+    "module": "esnext",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "baseUrl": "./packages/",
+    "noEmit": true,
+    "allowJs": true
   },
-  "references": [{ "path": "common" }, { "path": "runtime" }]
+  "include": [
+    "./packages/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

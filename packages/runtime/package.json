@@ -1,0 +1,12 @@
+{
+  "name": "@ccloader3/runtime",
+  "private": true,
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@ccloader3/core": "workspace:*",
+    "@ccloader3/common": "workspace:*",
+    "ultimate-crosscode-typedefs": "github:CCDirectLink/ultimate-crosscode-typedefs"
+  }
+}

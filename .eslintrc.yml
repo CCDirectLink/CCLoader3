@@ -33,19 +33,5 @@ overrides:
 
   - files: '**/src/**/*.ts'
     extends: eslint-config-dmitmel/rules/typescript/with-type-checking
-
-  - files: '**/*.d.ts'
-    rules:
-      no-var: off
-
-  - files: 'src/**/*.ts'
     parserOptions:
       project: tsconfig.json
-
-  - files: 'common/src/**/*.ts'
-    parserOptions:
-      project: common/tsconfig.json
-
-  - files: 'runtime/src/**/*.ts'
-    parserOptions:
-      project: runtime/tsconfig.json

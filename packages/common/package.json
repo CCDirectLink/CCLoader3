@@ -1,0 +1,7 @@
+{
+  "name": "@ccloader3/common",
+  "private": true,
+  "exports": {
+    "./*": "./src/*.ts"
+  }
+}

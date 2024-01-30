@@ -16,20 +16,19 @@
     "@typescript-eslint/eslint-plugin": "^5.2.0",
     "@typescript-eslint/parser": "^5.2.0",
     "archiver": "^5.3.1",
-    "esbuild": "^0.15.13",
+    "esbuild": "^0.20.0",
+    "esbuild-copy-static-files": "^0.1.0",
     "eslint": "^8.1.0",
     "eslint-config-dmitmel": "dmitmel/eslint-config-dmitmel",
     "eslint-plugin-node": "^11.1.0",
-    "prettier": "^2.0.5",
+    "prettier": "^2.8.8",
     "readdir-glob": "^1.1.1",
     "typescript": "~4.8.4",
     "ultimate-crosscode-typedefs": "github:CCDirectLink/ultimate-crosscode-typedefs"
   },
   "scripts": {
-    "build": "tsc --build",
-    "watch": "tsc --build --watch",
+    "build": "node build.mjs",
     "lint": "eslint . --ext .js,.ts --ignore-path .eslintignore",
-    "check-fmt": "prettier --check '**/*.{js,ts,json,css,scss,html}'",
-    "clean": "rm -rv common/dist/ runtime/dist/ dist/"
+    "check-fmt": "prettier --check '**/*.{js,ts,json,css,scss,html}'"
   }
 }

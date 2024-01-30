@@ -1,0 +1,29 @@
+{
+  "labels": {
+    "menu": {
+      "option": {
+        "mods": "Mods"
+      }
+    },
+    "options": {
+      "headers": {
+        "logLevel": "Log levels"
+      },
+      "logLevel-log": {
+        "name": "Log level: Default",
+        "description": "Enables default message popups. \\c[1]Needs a restart!"
+      },
+      "logLevel-warn": {
+        "name": "Log level: Warnings",
+        "description": "Enables warning popups. \\c[1]Needs a restart!"
+      },
+      "logLevel-error": {
+        "name": "Log level: Errors",
+        "description": "Enables error popups. \\c[1]Needs a restart!"
+      },
+      "mods-description": {
+        "description": "In this menu you can \\c[3]enable or disable installed mods\\c[0]. Mod descriptions are shown below. \\c[1]The game needs to be restarted\\c[0] if you change any options here!"
+      }
+    }
+  }
+}
