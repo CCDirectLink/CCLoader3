@@ -100,12 +100,14 @@ esbuild.build({
         }));
       },
     },
+    // Turn vendored libraries into """valid""" TS files so they can be used in
+    // imports.
     {
       name: 'postprocess',
       setup(build) {
-        build.onEnd(async () => {
+        build.onEnd(() => {
           for (const name of Object.keys(entryPoints)) {
-            const path = paths.resolve(__dirname, `../common/vendor-libs/${name}.js`);
+            const path = paths.resolve(__dirname, `../packages/common/src/vendor-libs/${name}.js`);
             let file = fs.readFileSync(path).toString();
             file = `// @ts-nocheck\n${file}`;
             fs.writeFileSync(path.replace('.js', '.ts'), file);

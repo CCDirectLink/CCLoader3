@@ -1,5 +1,6 @@
 import * as resourcesPlain from './resources-plain';
 import * as patchsteps from '@ccloader3/common/vendor-libs/patch-steps';
+import type { ParsedPath, PatchFile } from 'ultimate-crosscode-typedefs/patch-steps-lib';
 import * as utils from '@ccloader3/common/utils';
 import { PatchList, ResourcePatchList } from './patch-list';
 import * as paths from '@ccloader3/common/paths';
@@ -62,7 +63,7 @@ function registerPatchstepsPatch(
 ): void {
   jsonPatches.add(patchedAssetPath, {
     dependencies: () => {
-      return resourcesPlain.loadJSON<patchsteps.PatchFile>(
+      return resourcesPlain.loadJSON<PatchFile>(
         wrapPathIntoURL(`${mod.assetsDirectory}${patchFileRelativePath}`).href,
       );
     },
@@ -376,7 +377,7 @@ class PatchstepsCustomDebugState extends patchsteps.DebugState {
     super();
   }
 
-  public translateParsedPath(parsedPath: patchsteps.ParsedPath): string {
+  public translateParsedPath(parsedPath: ParsedPath): string {
     if (parsedPath != null) {
       let [protocol, path] = parsedPath;
 

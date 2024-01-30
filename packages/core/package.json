@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@ccloader3/common": "workspace:*",
-    "@ccloader3/runtime": "workspace:*"
+    "@ccloader3/runtime": "workspace:*",
+    "ultimate-crosscode-typedefs": "github:CCDirectLink/ultimate-crosscode-typedefs"
   }
 }

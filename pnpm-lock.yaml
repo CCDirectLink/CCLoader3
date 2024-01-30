@@ -67,7 +67,11 @@ importers:
         specifier: github:CCDirectLink/ultimate-crosscode-typedefs
         version: github.com/CCDirectLink/ultimate-crosscode-typedefs/7335d7f9c42dcd94ccff63eb97ec85a7219b6c57
 
-  packages/common: {}
+  packages/common:
+    dependencies:
+      ultimate-crosscode-typedefs:
+        specifier: github:CCDirectLink/ultimate-crosscode-typedefs
+        version: github.com/CCDirectLink/ultimate-crosscode-typedefs/7335d7f9c42dcd94ccff63eb97ec85a7219b6c57
 
   packages/core:
     dependencies:
@@ -77,6 +81,9 @@ importers:
       '@ccloader3/runtime':
         specifier: workspace:*
         version: link:../runtime
+      ultimate-crosscode-typedefs:
+        specifier: github:CCDirectLink/ultimate-crosscode-typedefs
+        version: github.com/CCDirectLink/ultimate-crosscode-typedefs/7335d7f9c42dcd94ccff63eb97ec85a7219b6c57
 
   packages/runtime:
     dependencies:
@@ -1644,7 +1651,6 @@ packages:
     name: ultimate-crosscode-typedefs
     version: 0.0.1
     engines: {node: '>=10.0.0'}
-    prepare: true
     requiresBuild: true
     dependencies:
       '@types/jquery': 1.10.45

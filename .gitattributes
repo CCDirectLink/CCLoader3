@@ -1,3 +1,4 @@
-/common/vendor-libs/jszip.js linguist-vendored
-/common/vendor-libs/patch-steps-lib/**/* linguist-vendored
-/common/vendor-libs/semver.js linguist-vendored
+/packages/common/src/vendor-libs/jszip.ts linguist-vendored
+/packages/common/src/vendor-libs/patch-steps-lib/**/* linguist-vendored
+/packages/common/src/vendor-libs/semver.ts linguist-vendored
+/packages/common/src/vendor-libs/strip-json-comments.ts linguist-vendored

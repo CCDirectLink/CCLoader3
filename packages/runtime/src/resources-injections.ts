@@ -132,8 +132,7 @@ impactModuleHooks.add('impact.base.image', () => {
     reload() {
       if ('reload' in ig.Loadable.prototype) {
         // I kinda gave up fixing the `ImpactClass` here
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ig.Loadable.prototype.reload.call(this as any);
+        ig.Loadable.prototype.reload.call(this);
       } else {
         // doubt that someone will ever need the semantics of the default
         // `ig.Loadable#reload` implementation in pre-1.1.0 versions which have

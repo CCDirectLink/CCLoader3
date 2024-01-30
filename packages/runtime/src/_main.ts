@@ -25,6 +25,7 @@ export default class RuntimeModMainClass implements modloader.Mod.PluginClass {
       utils,
       require: requireFixed,
       semver,
+      // @ts-expect-error genuinely no idea what's going on here.
       patchStepsLib,
       patchList,
       impactInitHooks,

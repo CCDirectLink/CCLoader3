@@ -1,6 +1,10 @@
 // inspired by https://github.com/20kdc/decrossfuscator/blob/b5c4250aade5bf8d41b12ec7c346d49ba107b2a9/mods/raptureui/decontaminant.js
 
-export {};
+declare global {
+  namespace modloader {
+    const _runtimeMod: Mod;
+  }
+}
 
 // eslint-disable-next-line no-var, @typescript-eslint/no-explicit-any
 declare var chrome: any;

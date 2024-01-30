@@ -1,4 +1,8 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src", "node_modules/ultimate-crosscode-typedefs/crosscode-ccloader-all.d.ts"]
+  "include": [
+    "src",
+    "../../global.d.ts",
+    "node_modules/ultimate-crosscode-typedefs/crosscode-ccloader-all.d.ts"
+  ]
 }

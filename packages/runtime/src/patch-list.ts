@@ -1,9 +1,9 @@
 import * as utils from '@ccloader3/common/utils';
 import {
   PatchList as PatchListPublic,
+  ResourcePatchList as ResourcePatchListPublic,
   ResourcePatcherSimple,
   ResourcePatcherWithDeps,
-  ResourcePatchList as ResourcePatchListPublic,
 } from 'ultimate-crosscode-typedefs/modloader-stdlib/patch-list';
 
 export class PatchList<P> implements PatchListPublic<P> {

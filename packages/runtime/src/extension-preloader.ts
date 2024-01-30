@@ -14,11 +14,14 @@ declare global {
 }
 
 const extensionFolder = paths.join(modloader.config.gameAssetsDir, 'extension');
+// @ts-expect-error we're not using CJS
 const exts = await getInstalledExtensions(modloader.config);
 for (const extensionName of exts) {
   const filepath = paths.join(extensionFolder, extensionName);
+  // @ts-expect-error we're not using CJS
   const isReadable = await files.isReadable(`${filepath}/${extensionName}.json`);
   if (isReadable) {
+    // @ts-expect-error we're not using CJS
     const text = await files.loadText(`${filepath}/${extensionName}.json`);
     const data = JSON.parse(text);
 

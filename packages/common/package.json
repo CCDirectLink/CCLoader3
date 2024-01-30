@@ -6,5 +6,8 @@
   },
   "exports": {
     "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "ultimate-crosscode-typedefs": "github:CCDirectLink/ultimate-crosscode-typedefs"
   }
 }
