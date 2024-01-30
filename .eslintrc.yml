@@ -31,6 +31,10 @@ overrides:
     rules:
       node/no-missing-import: off
 
+  - files: '**/*.d.ts'
+    rules:
+      no-var: off
+
   - files: '**/src/**/*.ts'
     extends: eslint-config-dmitmel/rules/typescript/with-type-checking
     parserOptions:

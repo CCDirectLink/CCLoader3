@@ -1,7 +1,7 @@
 {
   "private": true,
   "engines": {
-    "node": ">=11.0.0"
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "jszip": "=3.10.1",
@@ -13,12 +13,12 @@
     "@types/jquery": "^1.10.31",
     "@types/node": ">=11.9",
     "@types/semver": "6.2.x || 6.3.x",
-    "@typescript-eslint/eslint-plugin": "^5.2.0",
-    "@typescript-eslint/parser": "^5.2.0",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
     "archiver": "^5.3.1",
     "esbuild": "^0.20.0",
     "esbuild-copy-static-files": "^0.1.0",
-    "eslint": "^8.1.0",
+    "eslint": "^8.56.0",
     "eslint-config-dmitmel": "dmitmel/eslint-config-dmitmel",
     "eslint-plugin-node": "^11.1.0",
     "prettier": "^2.8.8",
@@ -29,6 +29,7 @@
   "scripts": {
     "build": "node build.mjs",
     "lint": "eslint . --ext .js,.ts --ignore-path .eslintignore",
-    "check-fmt": "prettier --check '**/*.{js,ts,json,css,scss,html}'"
+    "check-fmt": "prettier --check '**/*.{js,ts,json,css,html}'",
+    "format": "prettier --write **/*.{js,ts,json,css,scss,html}"
   }
 }

@@ -1,5 +1,4 @@
 .pnpm-store/
 dist/
-src/node-module-imports/
-common/vendor-libs/**/*.js*
+packages/common/src/vendor-libs
 ultimate-crosscode-typedefs/

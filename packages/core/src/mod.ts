@@ -7,8 +7,8 @@ import {
   Dependency,
   LegacyPluginClass,
   LoadingStage,
-  Mod as ModPublic,
   ModID,
+  Mod as ModPublic,
   PluginClass,
 } from 'ultimate-crosscode-typedefs/modloader/mod';
 
@@ -17,7 +17,7 @@ export class Mod implements ModPublic {
   public readonly version: semver.SemVer | null = null;
   public readonly dependencies: ReadonlyMap<ModID, Dependency>;
   public readonly assetsDirectory: string;
-  public assets: Set<string> = new Set();
+  public assets = new Set<string>();
   public pluginClassInstance: PluginClass | null = null;
 
   public constructor(

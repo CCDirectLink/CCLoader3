@@ -6,15 +6,11 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "moduleResolution": "bundler",
+    "moduleResolution": "nodenext",
     "baseUrl": "./packages/",
     "noEmit": true,
     "allowJs": true
   },
-  "include": [
-    "./packages/**/*"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["./packages/**/*"],
+  "exclude": ["node_modules"]
 }
