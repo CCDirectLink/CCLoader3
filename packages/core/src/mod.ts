@@ -7,8 +7,8 @@ import {
   Dependency,
   LegacyPluginClass,
   LoadingStage,
-  ModID,
   Mod as ModPublic,
+  ModID,
   PluginClass,
 } from 'ultimate-crosscode-typedefs/modloader/mod';
 

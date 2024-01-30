@@ -65,7 +65,7 @@ importers:
         version: 4.8.4
       ultimate-crosscode-typedefs:
         specifier: github:CCDirectLink/ultimate-crosscode-typedefs
-        version: github.com/CCDirectLink/ultimate-crosscode-typedefs/7be2e2c19c39955f9325bf8968f7e1142ebe3f49
+        version: github.com/CCDirectLink/ultimate-crosscode-typedefs/967f7c2770125a84b125d91635896cb3cecf2b27
 
   packages/common: {}
 
@@ -1649,6 +1649,20 @@ packages:
       '@types/jquery': 1.10.45
       '@types/node': 20.11.10
       '@types/semver': 6.2.7
+    dev: false
+
+  github.com/CCDirectLink/ultimate-crosscode-typedefs/967f7c2770125a84b125d91635896cb3cecf2b27:
+    resolution: {tarball: https://codeload.github.com/CCDirectLink/ultimate-crosscode-typedefs/tar.gz/967f7c2770125a84b125d91635896cb3cecf2b27}
+    name: ultimate-crosscode-typedefs
+    version: 0.0.1
+    engines: {node: '>=10.0.0'}
+    prepare: true
+    requiresBuild: true
+    dependencies:
+      '@types/jquery': 1.10.45
+      '@types/node': 20.11.10
+      '@types/semver': 6.2.7
+    dev: true
 
   github.com/dmitmel/eslint-config-dmitmel/d97129ec35235415c6ae6a42299f55cdbb5d75fd(eslint@8.56.0):
     resolution: {tarball: https://codeload.github.com/dmitmel/eslint-config-dmitmel/tar.gz/d97129ec35235415c6ae6a42299f55cdbb5d75fd}
