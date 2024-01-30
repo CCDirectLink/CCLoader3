@@ -37,12 +37,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: |
-          # ...yeah, I don't know. Something something compilation order.
-          mv runtime/src/extension-preloader.ts ../
-          pnpm build
-          mv ../extension-preloader.ts runtime/src/
-          pnpm build
+        run: pnpm build
       - name: Lint
         run: pnpm lint
       - name: Check formatting
