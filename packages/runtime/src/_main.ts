@@ -44,6 +44,10 @@ export default class RuntimeModMainClass implements modloader.Mod.PluginClass {
     for (let cb of impactInitHooks.callbacks) cb();
   }
 
+  public async prestart(): Promise<void> {
+    await import('./_prestart.js');
+  }
+
   public async postload(): Promise<void> {
     await import('./_postload.js');
   }

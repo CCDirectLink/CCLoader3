@@ -33,5 +33,10 @@
     "lint": "eslint . --ext .js,.ts --ignore-path .eslintignore",
     "check-fmt": "prettier --check '**/*.{js,ts,json,css,html}'",
     "format": "prettier --write **/*.{js,ts,json,css,html}"
+  },
+  "_pnpm": {
+    "overrides": {
+      "ultimate-crosscode-typedefs": "file:../ultimate-crosscode-typedefs"
+    }
   }
 }
