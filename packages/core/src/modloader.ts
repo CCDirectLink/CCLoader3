@@ -39,10 +39,7 @@ export async function boot(): Promise<void> {
   let { version: gameVersion, hotfix: gameVersionHotfix } = await game.loadVersion(config);
   console.log(`crosscode ${gameVersion}-${gameVersionHotfix}`);
 
-  let runtimeModBaseDirectory = utils.cwdFilePathFromURL(
-    // @ts-expect-error we're not using CJS
-    new URL('../dist/runtime', import.meta.url),
-  );
+  let runtimeModBaseDirectory = './ccloader3/dist/runtime';
   let runtimeMod: Mod | null;
   try {
     runtimeMod = await loadModMetadata(runtimeModBaseDirectory);
@@ -186,8 +183,7 @@ export async function boot(): Promise<void> {
 }
 
 async function loadModloaderMetadata(): Promise<{ version: semver.SemVer }> {
-  // @ts-expect-error we're not using CJS
-  let filePath = utils.cwdFilePathFromURL(new URL('../metadata.json', import.meta.url));
+  let filePath = './ccloader3/metadata.json';
   let jsonText = await files.loadText(filePath);
   let data = JSON.parse(jsonText) as { version: string };
   return {
