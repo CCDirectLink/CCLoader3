@@ -42,6 +42,7 @@ async function main() {
           'dist/runtime/**/{,*.js,*.d.ts,*.js.map}',
           'dist/runtime/assets/**/{,*.json.patch}',
           'dist/runtime/media/**/{,*.png}',
+          'dist-ccmod-service-worker.js',
         ],
         ignore: ['**/*.tsbuildinfo'],
         skip: ['node_modules', '.git'], // Don't waste time descending into these directories.
@@ -129,7 +130,7 @@ async function main() {
       format.options,
       `ccloader_v${modloaderMeta.version}_quick-install.${format.fileExt}`,
       async (archive) => {
-        let modloaderDirName = 'ccloader';
+        let modloaderDirName = 'ccloader3';
         let packageJsonData = {
           name: 'CrossCode',
           version: '1.0.0',
