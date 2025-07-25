@@ -26,6 +26,7 @@ function donePlugin(outfile: string): esbuild.Plugin {
 const commonOptions = {
   format: 'esm',
   platform: 'node',
+  target: 'es2018',
 
   write: false,
   bundle: true,
