@@ -13,22 +13,22 @@ declare global {
   }
 }
 
-const extensionFolder = paths.join(modloader.config.gameAssetsDir, 'extension');
-// @ts-expect-error we're not using CJS
-const exts = await getInstalledExtensions(modloader.config);
-for (const extensionName of exts) {
-  const filepath = paths.join(extensionFolder, extensionName);
-  // @ts-expect-error we're not using CJS
-  const isReadable = await files.isReadable(`${filepath}/${extensionName}.json`);
-  if (isReadable) {
-    // @ts-expect-error we're not using CJS
-    const text = await files.loadText(`${filepath}/${extensionName}.json`);
-    const data = JSON.parse(text);
+async function preloadExtensions(): Promise<void> {
+  const extensionFolder = paths.join(modloader.config.gameAssetsDir, 'extension');
+  const exts = await getInstalledExtensions(modloader.config);
+  for (const extensionName of exts) {
+    const filepath = paths.join(extensionFolder, extensionName);
+    const isReadable = await files.isReadable(`${filepath}/${extensionName}.json`);
+    if (isReadable) {
+      const text = await files.loadText(`${filepath}/${extensionName}.json`);
+      const data = JSON.parse(text);
 
-    if (!data.files) break;
+      if (!data.files) break;
 
-    for (const extFile of data.files) {
-      ig.fileForwarding[extFile] = `extension/${extensionName}/${extFile}`;
+      for (const extFile of data.files) {
+        ig.fileForwarding[extFile] = `extension/${extensionName}/${extFile}`;
+      }
     }
   }
 }
+void preloadExtensions();
