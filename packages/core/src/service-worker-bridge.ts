@@ -7,7 +7,6 @@ export async function loadServiceWorker(): Promise<ServiceWorker> {
     const path = 'dist-ccmod-service-worker.js';
     await window.navigator.serviceWorker.register(path, {
       updateViaCache: 'none',
-      type: 'module',
     });
   }
 
