@@ -317,7 +317,7 @@ async function loadModMetadata(baseDirectory: string): Promise<Mod | null> {
       // but not for `ccmod.json`s that were incorrectly migrated. Instead of
       // going through the hassle of getting those mods updated *again*, I'll
       // just fix it once and for all.
-      manifestData.assets = manifestData.assets?.map(e => e.replace(/^assets\//, ''));
+      manifestData.assets = manifestData.assets?.map((e) => e.replace(/^assets\//, ''));
     }
   } catch (err) {
     if (utils.errorHasMessage(err)) {
