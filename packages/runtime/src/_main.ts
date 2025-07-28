@@ -33,6 +33,9 @@ export default class RuntimeModMainClass implements modloader.Mod.PluginClass {
       moduleCache,
       resources,
     });
+
+    // There's probably an issue with this being a non-awaited import.
+    import('./fixes/ccloader2-polyfill.js');
   }
 
   public onImpactInit(): void {

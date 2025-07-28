@@ -56,7 +56,8 @@ export async function boot(): Promise<void> {
 
   let virtualPackages = new Map<ModID, semver.SemVer>()
     .set('crosscode', gameVersion)
-    .set('ccloader', modloaderMetadata.version);
+    .set('ccloader', modloaderMetadata.version)
+    .set('Simplify', new semver.SemVer('2.14.2'));
   if (typeof process !== 'undefined') {
     virtualPackages.set('nw', new semver.SemVer(process.versions.nw!));
   }
@@ -177,6 +178,9 @@ export async function boot(): Promise<void> {
   let activeDelegateFn = await game.getDelegateActivationFunction();
   console.log("stage 'poststart' reached!");
   await executeStage(loadedMods, 'poststart');
+
+  // NOTE: LEGACY CCLOADER2 EVENT
+  document.body.dispatchEvent(new Event('modsLoaded', { bubbles: true }));
 
   activeDelegateFn();
   console.log('crosscode with mods is now fully loaded!');
