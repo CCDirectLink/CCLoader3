@@ -46,7 +46,7 @@ export function addFetchHandler(pathPrefixes: string[], handler: FetchHandler): 
 
 export interface ServiceWorkerPacket {
   path: string;
-  data: ArrayBufferLike | null;
+  data: BodyInit | null;
 }
 
 function setMessageHandling(): void {
