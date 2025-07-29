@@ -54,7 +54,10 @@ async function findRecursivelyInternal(
   );
 }
 
-export async function getModDirectoriesIn(dir: string, _config: Config): Promise<string[]> {
+export async function getModPathsIn(
+  dir: string,
+  _config: Config,
+): Promise<{ modDirectories: string[]; ccmods: string[] }> {
   if (dir.endsWith('/')) dir = dir.slice(0, -1);
 
   let allContents: string[];
@@ -68,18 +71,21 @@ export async function getModDirectoriesIn(dir: string, _config: Config): Promise
     throw err;
   }
 
-  let modDirectories: string[] = [];
+  const modDirectories: string[] = [];
+  const ccmods: string[] = [];
   await Promise.all(
     allContents.map(async (name) => {
       let fullPath = `${dir}/${name}`;
       // the `withFileTypes` option of `readdir` can't be used here because it
       // doesn't dereference symbolic links similarly to `stat`
       let stat = await fs.promises.stat(fullPath);
-      if (stat.isDirectory() || (stat.isFile() && name.endsWith('.ccmod')))
-        modDirectories.push(fullPath);
+      if (stat.isDirectory()) modDirectories.push(fullPath);
+      else if (stat.isFile() && name.endsWith('.ccmod')) {
+        ccmods.push(fullPath);
+      }
     }),
   );
-  return modDirectories;
+  return { modDirectories, ccmods };
 }
 
 // Replicates the behavior of `ig.ExtensionList#loadExtensionsNWJS`.

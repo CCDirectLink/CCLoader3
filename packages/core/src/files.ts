@@ -11,7 +11,7 @@ const modules = {
 };
 const currentModule = modules[utils.PLATFORM_TYPE];
 
-export const { getModDirectoriesIn, getInstalledExtensions } = currentModule;
+export const { getModPathsIn, getInstalledExtensions } = currentModule;
 
 export async function isReadable(path: string): Promise<boolean> {
   return (await filesCCMod.isReadable(path)) || currentModule.isReadable(path);

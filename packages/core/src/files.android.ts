@@ -3,7 +3,10 @@ import { Config } from './config';
 
 export { isReadable, readFile, loadText } from './files.browser';
 
-export async function getModDirectoriesIn(dir: string, config: Config): Promise<string[]> {
+export async function getModPathsIn(
+  dir: string,
+  config: Config,
+): Promise<{ modDirectories: string[]; ccmods: string[] }> {
   if (dir === `${config.gameAssetsDir}mods/`) {
     try {
       let modsDirEntries = JSON.parse(CrossAndroidModListProvider.getModListAsJson()) as string[];
@@ -13,12 +16,12 @@ export async function getModDirectoriesIn(dir: string, config: Config): Promise<
           modSubdirs.push(`${dir}/${modDirName.slice(0, -1)}`);
         }
       }
-      return modSubdirs;
+      return { modDirectories: modSubdirs, ccmods: [] };
     } catch (err) {
       console.error('Failed to get the list of mods from CrossAndroid:', err);
     }
   }
-  return filesBrowser.getModDirectoriesIn(dir, config);
+  return filesBrowser.getModPathsIn(dir, config);
 }
 
 export async function getInstalledExtensions(config: Config): Promise<string[]> {

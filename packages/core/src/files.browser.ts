@@ -32,7 +32,10 @@ export async function isReadable(path: string): Promise<boolean> {
   }
 }
 
-export async function getModDirectoriesIn(dir: string, _config: Config): Promise<string[]> {
+export async function getModPathsIn(
+  dir: string,
+  _config: Config,
+): Promise<{ modDirectories: string[]; ccmods: string[] }> {
   if (dir.endsWith('/')) dir = dir.slice(0, -1);
 
   let indexPath = `${dir}/index.json`;
@@ -48,7 +51,18 @@ export async function getModDirectoriesIn(dir: string, _config: Config): Promise
     throw err;
   }
 
-  return index.map((modDirPath) => paths.join(dir, paths.jailRelative(modDirPath)));
+  const modPaths = index.map((modDirPath) => paths.join(dir, paths.jailRelative(modDirPath)));
+  const modDirectories: string[] = [];
+  const ccmods: string[] = [];
+  for (const path of modPaths) {
+    if (path.endsWith('.ccmod')) {
+      ccmods.push(path);
+    } else {
+      modDirectories.push(path);
+    }
+  }
+
+  return { modDirectories, ccmods };
 }
 
 // Replicates the behavior of `ig.ExtensionList#loadExtensionsPHP`.

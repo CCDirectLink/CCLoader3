@@ -54,13 +54,10 @@ export async function findRecursively(dir: string): Promise<string[] | null> {
   return dirs;
 }
 
-export async function loadCCMods(
-  allModsList: Array<{ parentDir: string; dir: string }>,
-): Promise<void> {
-  const ccmods: typeof allModsList = allModsList.filter((mod) => mod.dir.endsWith('.ccmod'));
+export async function loadCCMods(ccmods: string[]): Promise<void> {
   const ccmodArrayBuffers = await Promise.all(
-    ccmods.map(async (mod) => {
-      const url = `./${mod.dir}`;
+    ccmods.map(async (modDir) => {
+      const url = `./${modDir}`;
       return new Uint8Array(await files.readFile(url));
     }),
   );
@@ -70,13 +67,10 @@ export async function loadCCMods(
   // console.timeEnd('uncompress');
 
   for (let i = 0; i < ccmods.length; i++) {
-    const mod = ccmods[i];
+    const modDir = ccmods[i];
     const buf = uncompressed[i];
-    fileMap.set(mod.dir, buf);
+    fileMap.set(modDir, buf);
   }
 
-  addFetchHandler(
-    ccmods.map((mod) => mod.dir),
-    readFile,
-  );
+  addFetchHandler(ccmods, readFile);
 }

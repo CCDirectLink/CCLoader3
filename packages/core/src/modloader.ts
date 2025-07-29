@@ -195,20 +195,24 @@ async function loadModloaderMetadata(): Promise<{ version: semver.SemVer }> {
 
 async function loadAllModMetadata(config: configM.Config, installedMods: ModsMap): Promise<void> {
   let allModsList: Array<{ parentDir: string; dir: string }> = [];
+  let ccmodPaths: string[] = [];
+
   for (let dir of config.modsDirs) {
     let subdirsList: string[];
+    let ccmods: string[];
     try {
-      subdirsList = await files.getModDirectoriesIn(dir, config);
+      ({ modDirectories: subdirsList, ccmods } = await files.getModPathsIn(dir, config));
     } catch (err) {
       console.warn(`Failed to load the list of mods in '${dir}':`, err);
       continue;
     }
-    for (let subdir of subdirsList) {
+    for (let subdir of [...subdirsList, ...ccmods]) {
       allModsList.push({ parentDir: dir, dir: subdir });
     }
+    ccmodPaths.push(...ccmods);
   }
 
-  await loadCCMods(allModsList);
+  await loadCCMods(ccmodPaths);
 
   let modsCountPerDir = new Map<string, number>();
   await Promise.all(
