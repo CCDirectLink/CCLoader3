@@ -1,6 +1,7 @@
 /* eslint-disable consistent-return */
 // This may be one of the worst pieces of this codebase. Please don't judge too heavily!
 
+import semver from '@ccloader3/common/vendor-libs/semver';
 import type { LocalizedString } from 'ultimate-crosscode-typedefs/file-types/mod-manifest';
 
 interface LegacyMod {
@@ -65,8 +66,8 @@ const simplify = new Proxy(_simplify, {
       return;
     }
 
-    console.debug(new Error(`Simplify property '${p}' requested. This is no longer supported.`));
-    if (prop) return prop;
+    console.debug(new Error(`Simplify property '${p}' requested. This is deprecated.`));
+    return prop;
   },
 });
 
@@ -74,6 +75,7 @@ Object.assign(window, {
   cc,
   simplify,
   Plugin,
+  semver,
 
   versions: Array.from(modloader.installedMods.values()).reduce<Record<string, string>>(
     (acc, mod) => {
