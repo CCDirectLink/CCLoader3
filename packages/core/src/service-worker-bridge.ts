@@ -1,3 +1,72 @@
+export namespace ServiceWorker {
+  // Messages send to the service worker
+  export namespace Outgoing {
+    export interface ValidPathPrefixesPacket {
+      type: 'ValidPathPrefixes';
+      validPathPrefixes: string[];
+    }
+
+    export interface DataPacket {
+      type: 'Data';
+      path: string;
+      data: BodyInit | null;
+    }
+
+    export type Packet = ValidPathPrefixesPacket | DataPacket;
+  }
+  // Messages coming from the service worker
+  export namespace Incoming {
+    export interface PathPacket {
+      type: 'Path';
+      path: string;
+    }
+    export interface ValidPathPrefixesRequestPacket {
+      type: 'ValidPathPrefixesRequest';
+    }
+
+    export type Packet = PathPacket | ValidPathPrefixesRequestPacket;
+  }
+}
+
+export type FetchHandler = (path: string) => Promise<ArrayBufferLike | null>;
+
+let fetchHandler: FetchHandler | undefined;
+let validPathPrefixes: string[] = [];
+
+function sendServiceWorkerMessage(packet: ServiceWorker.Outgoing.Packet): void {
+  const { controller } = window.navigator.serviceWorker;
+  controller?.postMessage(packet);
+}
+
+export function setFetchHandler(pathPrefixes: string[], handler: FetchHandler): void {
+  fetchHandler = handler;
+  validPathPrefixes = pathPrefixes.map((path) => `/${path}/`);
+  sendServiceWorkerMessage({ type: 'ValidPathPrefixes', validPathPrefixes });
+}
+
+function setMessageHandling(): void {
+  navigator.serviceWorker.onmessage = async (event) => {
+    const packet: ServiceWorker.Incoming.Packet = event.data;
+    let responsePacket: ServiceWorker.Outgoing.Packet;
+
+    if (packet.type === 'Path') {
+      const { path } = packet;
+      responsePacket = {
+        type: 'Data',
+        path,
+        data:
+          (await fetchHandler?.(path).catch((e) => {
+            console.error(`error while handing fetch of ${path}:`, e);
+          })) ?? null,
+      };
+    } else {
+      responsePacket = { type: 'ValidPathPrefixes', validPathPrefixes };
+    }
+
+    sendServiceWorkerMessage(responsePacket);
+  };
+}
+
 export async function loadServiceWorker(): Promise<ServiceWorker> {
   const currentRegistration = await window.navigator.serviceWorker.getRegistration();
   if (currentRegistration) {
@@ -20,53 +89,7 @@ export async function loadServiceWorker(): Promise<ServiceWorker> {
   }
 
   setMessageHandling();
-  updateServiceWorkerValidPathPrefixes();
+  sendServiceWorkerMessage({ type: 'ValidPathPrefixes', validPathPrefixes });
 
   return controller;
-}
-
-function sendServiceWorkerMessage(packet: unknown): void {
-  const { controller } = window.navigator.serviceWorker;
-  controller?.postMessage(packet);
-}
-
-export type FetchHandler = (path: string) => Promise<ArrayBufferLike | null>;
-const fetchHandlers: FetchHandler[] = [];
-const validPathPrefixes: string[] = [];
-
-function updateServiceWorkerValidPathPrefixes(): void {
-  sendServiceWorkerMessage(validPathPrefixes.map((path) => `/${path}`));
-}
-
-export function addFetchHandler(pathPrefixes: string[], handler: FetchHandler): void {
-  fetchHandlers.unshift(handler);
-  validPathPrefixes.push(...pathPrefixes);
-  updateServiceWorkerValidPathPrefixes();
-}
-
-export interface ServiceWorkerPacket {
-  path: string;
-  data: BodyInit | null;
-}
-
-function setMessageHandling(): void {
-  navigator.serviceWorker.onmessage = async (event) => {
-    const path: string = event.data;
-
-    let data: ArrayBufferLike | null = null;
-    for (const handler of fetchHandlers) {
-      try {
-        data = await handler(path);
-      } catch (e) {
-        console.error(`error while handing fetch of ${path}:`, e);
-      }
-      if (data) break;
-    }
-
-    const packet: ServiceWorkerPacket = {
-      path,
-      data,
-    };
-    sendServiceWorkerMessage(packet);
-  };
 }
