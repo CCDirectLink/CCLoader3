@@ -2,16 +2,7 @@ import * as utils from '@ccloader3/common/utils';
 import semver from '@ccloader3/common/vendor-libs/semver';
 import * as files from './files';
 
-export interface Config {
-  gameAssetsDir: string;
-  modsDirs: string[];
-  stylesheetURLs: string[];
-  scriptURLs: string[];
-  gameScriptURL: string;
-  // TODO(lexisother): DOCUMENT!!!
-  impactConfig: Record<string, unknown>;
-  onGameDOMCreated: () => utils.MaybePromise<void>;
-}
+export type Config = typeof modloader.config;
 
 export interface ConfigModule {
   default: (config: Config, context: ConfigModuleContext) => utils.MaybePromise<void>;

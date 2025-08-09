@@ -5,13 +5,6 @@
 import * as files from '@ccloader3/core/files';
 import { getInstalledExtensions } from '@ccloader3/core/files';
 import * as paths from '@ccloader3/common/paths';
-import * as configM from '@ccloader3/core/config';
-
-declare global {
-  namespace modloader {
-    const config: configM.Config;
-  }
-}
 
 async function preloadExtensions(): Promise<void> {
   const extensionFolder = paths.join(modloader.config.gameAssetsDir, 'extension');
